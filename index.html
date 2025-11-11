@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Ladder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .ladder-container {
+            margin: 25px 0;
+        }
+
+        .ladder-step {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            margin: 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .ladder-step:hover:not([data-index="0"]):not([data-index]) {
+            background: #e8ecf5;
+        }
+
+        .selected-step {
+            background: #e8ecf5 !important;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 0 8px;
+            margin: -2px;
+        }
+
+        .edit-distance-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 0;
+            margin: 0;
+        }
+
+        .edit-distance-indicator {
+            font-size: 0.9em;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            min-width: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-distance-indicator.valid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .edit-distance-indicator.invalid {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .edit-distance-indicator.empty {
+            background: #f3f4f6;
+            color: #9ca3af;
+        }
+
+        .distance-crossed {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        .distance-arrow {
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+
+        .word-slot {
+            display: flex;
+            gap: 3px;
+        }
+
+        .letter-box {
+            width: 45px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            border-radius: 6px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            transition: all 0.2s ease;
+        }
+
+        .letter-box.filled {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .letter-box.invalid-letter {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+            animation: shake 0.5s ease;
+        }
+
+        .letter-box.correct {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+            animation: pop 0.3s ease;
+        }
+
+        .letter-box.incorrect {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+            animation: shake 0.5s ease;
+        }
+
+        .letter-box.cursor {
+            border-color: #667eea;
+            border-width: 3px;
+            animation: pulse 1s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { border-color: #667eea; }
+            50% { border-color: #a5b4fc; }
+        }
+
+        @keyframes pop {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .letter-bag {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 15px;
+            background: #f0f4ff;
+            border-radius: 8px;
+            border: 2px dashed #667eea;
+            min-height: 70px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .letter-tile {
+            width: 40px;
+            height: 45px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .letter-tile:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .letter-tile.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+       .button-group button {
+            flex: 1;
+            padding: 15px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .message {
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.error {
+            background: #fee;
+            color: #c33;
+            display: block;
+        }
+
+        .message.success {
+            background: #efe;
+            color: #3c3;
+            display: block;
+        }
+
+        .message.info {
+            background: #eef;
+            color: #33c;
+            display: block;
+        }
+
+        .victory {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .victory h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .victory.show {
+            display: block;
+            animation: celebrate 0.5s ease;
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .instructions-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(102, 126, 234, 0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .instructions-overlay.show {
+            display: flex;
+        }
+
+        .instructions-popup {
+            background: white;
+            border-radius: 20px;
+            padding: 50px 40px 40px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .instructions-popup h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.8em;
+            color: #999;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+            padding: 0;
+        }
+
+        .close-btn:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .instructions-content {
+            margin-bottom: 30px;
+        }
+
+        .goal {
+            text-align: center;
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .rule-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .rule-number {
+            background: #667eea;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .rule-text {
+            color: #333;
+            font-size: 1em;
+            line-height: 1.4;
+        }
+
+        .hint-box {
+            margin-top: 25px;
+            padding: 15px;
+            background: #fff9e6;
+            border-radius: 12px;
+            text-align: center;
+            color: #92400e;
+            font-size: 0.95em;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .start-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .stats-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .stats-overlay.show {
+            display: flex;
+        }
+
+        .stats-popup {
+            background: white;
+            border-radius: 20px;
+            padding: 50px 40px 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: slideUp 0.4s ease;
+        }
+
+        .stats-popup h2 {
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        .stats-content {
+            margin-bottom: 25px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stat-row.highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .divider {
+            height: 2px;
+            background: #e0e0e0;
+            margin: 25px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 15px 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-name {
+            font-size: 0.85em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .next-puzzle-info {
+            text-align: center;
+            padding: 15px;
+            background: #fff9e6;
+            border-radius: 10px;
+            color: #92400e;
+            font-size: 0.95em;
+        }
+
+        .next-puzzle-info strong {
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .puzzle-selector {
+            margin-bottom: 20px;
+        }
+
+        .daily-info {
+            background: #f0f4ff;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .help-btn {
+            background: transparent;
+            border: none;
+            color: #667eea;
+            border-radius: 8px;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .help-btn img {
+            display: block;
+            pointer-events: none;
+        }
+
+        .help-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1);
+            border-radius: 8px;
+            width: auto;
+        }
+
+        .daily-header {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .daily-label {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .daily-date {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            background: white;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .instructions {
+            background: #fff9e6;
+            border-left: 4px solid #fbbf24;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            🪜 Word Ladder <button class="help-btn" id="helpBtn" title="How to play" aria-label="How to play">
+                <img src="help.svg" alt="Help">
+            </button>
+        </h1>
+
+        <div class="daily-info" id="dailyInfo">
+            <div class="daily-header">
+                <span class="daily-label">📅 Daily Puzzle: </span>
+                <input type="date" id="datePicker" style="padding:8px; border-radius:6px; border:1px solid #ddd;">
+            </div>
+        </div>
+
+        <div class="ladder-container" id="ladderContainer"></div>
+
+        <div class="letter-bag" id="letterBag"></div>
+
+        <div class="message" id="message"></div>
+
+        <div class="button-group">
+            <button class="btn-secondary" id="resetBtn">Reset</button>
+            <button class="btn-primary" id="showSolutionBtn">Show Solution</button>
+        </div>
+
+        <div class="stats-overlay" id="statsOverlay">
+            <div class="stats-popup">
+                <button class="close-btn" id="closeStats">✕</button>
+                <h2 id="statsTitle">🎉 Puzzle Complete!</h2>
+                <div class="stats-content">
+                    <div class="stat-row highlight">
+                        <div class="stat-label">Today's Puzzle</div>
+                        <div class="stat-value" id="todayPuzzle">CAT → DOG</div>
+                    </div>
+                    
+                    <div class="divider"></div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-number" id="totalPlayed">0</div>
+                            <div class="stat-name">Played</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number" id="totalWins">0</div>
+                            <div class="stat-name">Solved</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number" id="winRate">0%</div>
+                            <div class="stat-name">Win Rate</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number" id="currentStreak">0</div>
+                            <div class="stat-name">Streak</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="next-puzzle-info" id="nextPuzzleInfo">
+                    Next puzzle in <strong id="timeUntilNext">--:--:--</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions-overlay" id="instructionsOverlay">
+            <div class="instructions-popup">
+                <button class="close-btn" id="closeInstructions">✕</button>
+                <h2>How to Play</h2>
+                <div class="instructions-content">
+                    <p class="goal">Transform the start word into the end word, one letter at a time.</p>
+                    
+                    <div class="rule-box">
+                        <div class="rule-number">1</div>
+                        <div class="rule-text">Click any empty word to select it</div>
+                    </div>
+                    
+                    <div class="rule-box">
+                        <div class="rule-number">2</div>
+                        <div class="rule-text">Type letters to fill in the word</div>
+                    </div>
+                    
+                    <div class="rule-box">
+                        <div class="rule-number">3</div>
+                        <div class="rule-text">Each word must differ by exactly one letter</div>
+                    </div>
+                    
+                    <div class="hint-box">
+                        💡 All letters you need are in the bag below
+                    </div>
+                </div>
+                <button class="start-btn" id="startPlaying">Start Playing</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Puzzle configurations with predefined solutions
+        const puzzles = [
+            { 
+                start: 'AWOKEN', 
+                target: 'SAVANNAH', 
+                solution: ['AWOKEN', 'SPOKEN', 'SPOKE', 'SAKE', 'SAGE', 'SAVAGE', 'SAVANNAH'],
+                wordLengths: [6, 6, 5, 4, 4, 6, 8],
+                distances: [2, 1, 2, 1, 2, 4]
+            },
+            { 
+                start: 'UNRAVELING', 
+                target: 'JUNGLE', 
+                solution: ['UNRAVELING', 'TRAVELING', 'TRAVEL', 'TRADE', 'JADE', 'JUDGE', 'JUNGLE'],
+                wordLengths: [10, 9, 6, 5, 4, 5, 6],
+                distances: [2, 3, 2, 2, 2, 2]
+            },
+            { 
+                start: 'GRIEVING', 
+                target: 'TUNDRA', 
+                solution: ['GRIEVING', 'GIVING', 'GOING', 'GONE', 'TONE', 'TONER', 'TUNER', 'TUNDRA'],
+                wordLengths: [8, 6, 5, 4, 4, 5, 5, 6],
+                distances: [2, 2, 2, 1, 1, 1, 2]
+            },
+            { 
+                start: 'VELVET', 
+                target: 'DESERT', 
+                solution: ['VELVET', 'VALVE', 'DALE', 'DEAL', 'DEAR', 'DEER', 'DESERT'],
+                wordLengths: [6, 5, 4, 4, 4, 4, 6],
+                distances: [2, 2, 2, 1, 1, 2]
+            },
+            { 
+                start: 'EVER', 
+                target: 'MOUNTAIN', 
+                solution: ['EVER', 'OVER', 'MOVES', 'MOVIES', 'MOVING', 'MORNING', 'MOUNTING', 'MOUNTAIN'],
+                wordLengths: [4, 4, 5, 6, 6, 7, 8, 8],
+                distances: [1, 2, 1, 2, 2, 2, 2]
+            }
+        ];
+
+        // Get today's date as a string (YYYY-MM-DD)
+        function getTodayString() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+
+        // Selected date (defaults to today). Change this to load puzzles for other days.
+        let selectedDateString = getTodayString();
+
+        // Get puzzle index for an arbitrary date string (YYYY-MM-DD)
+        function getPuzzleIndexForDate(dateString) {
+            let hash = 0;
+            for (let i = 0; i < dateString.length; i++) {
+                hash = ((hash << 5) - hash) + dateString.charCodeAt(i);
+                hash = hash & hash;
+            }
+            return Math.abs(hash) % puzzles.length;
+        }
+
+        let currentPuzzle = puzzles[getPuzzleIndexForDate(selectedDateString)];
+        let selectedWordIndex = 1; // Which word slot is selected
+        let userWords = {}; // Store user's words for each step
+        let letterTimestamps = {}; // Track when each letter was added: {wordIndex: {position: timestamp}}
+        let availableLetters = [];
+        let gameWon = false;
+
+        // DOM elements
+        const ladderContainerEl = document.getElementById('ladderContainer');
+        const letterBagEl = document.getElementById('letterBag');
+        const messageEl = document.getElementById('message');
+        const showSolutionBtn = document.getElementById('showSolutionBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statsOverlayEl = document.getElementById('statsOverlay');
+        const closeStatsBtn = document.getElementById('closeStats');
+        const statsTitleEl = document.getElementById('statsTitle');
+        const todayPuzzleEl = document.getElementById('todayPuzzle');
+        const totalPlayedEl = document.getElementById('totalPlayed');
+        const totalWinsEl = document.getElementById('totalWins');
+        const winRateEl = document.getElementById('winRate');
+        const currentStreakEl = document.getElementById('currentStreak');
+        const timeUntilNextEl = document.getElementById('timeUntilNext');
+        const datePickerEl = document.getElementById('datePicker');
+        const instructionsOverlayEl = document.getElementById('instructionsOverlay');
+        const closeInstructionsBtn = document.getElementById('closeInstructions');
+        const startPlayingBtn = document.getElementById('startPlaying');
+        const helpBtn = document.getElementById('helpBtn');
+
+        // Initialize game
+        function init() {
+            updateDailyDate();
+            loadProgress();
+            generateAvailableLetters();
+            updateDisplay();
+            document.addEventListener('keydown', handleKeyPress);
+            checkFirstVisit();
+        }
+
+        // Check if this is the user's first visit
+        function checkFirstVisit() {
+            const hasVisited = localStorage.getItem('wordLadderVisited');
+            if (!hasVisited) {
+                showInstructions();
+                localStorage.setItem('wordLadderVisited', 'true');
+            }
+        }
+
+        // Show instructions popup
+        function showInstructions() {
+            instructionsOverlayEl.classList.add('show');
+        }
+
+        // Hide instructions popup
+        function hideInstructions() {
+            instructionsOverlayEl.classList.remove('show');
+        }
+
+        // Load stats from localStorage
+        function loadStats() {
+            const saved = localStorage.getItem('wordLadderStats');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            return {
+                totalPlayed: 0,
+                totalWins: 0,
+                currentStreak: 0,
+                maxStreak: 0,
+                lastPlayedDate: null,
+                lastWonDate: null
+            };
+        }
+
+        // Save stats to localStorage
+        function saveStats(stats) {
+            localStorage.setItem('wordLadderStats', JSON.stringify(stats));
+        }
+
+        // Update stats after completing or showing solution
+        function updateStats(won, usedSolution = false) {
+            const stats = loadStats();
+            const today = selectedDateString;
+
+            // Only update if not already played on this date
+            if (stats.lastPlayedDate !== today) {
+                stats.totalPlayed++;
+                stats.lastPlayedDate = today;
+
+                if (won && !usedSolution) {
+                    stats.totalWins++;
+                    stats.lastWonDate = today;
+
+                    // Update streak relative to the selected date
+                    const yesterday = getYesterdayString(selectedDateString);
+                    if (stats.lastWonDate === yesterday || stats.lastWonDate === today) {
+                        stats.currentStreak++;
+                    } else {
+                        stats.currentStreak = 1;
+                    }
+
+                    stats.maxStreak = Math.max(stats.maxStreak, stats.currentStreak);
+                } else if (!won && !usedSolution) {
+                    // Lost - reset streak
+                    stats.currentStreak = 0;
+                }
+
+                saveStats(stats);
+            }
+
+            return stats;
+        }
+
+        // Get yesterday's date string (relative to optional dateString; defaults to today)
+        function getYesterdayString(dateString) {
+            const base = dateString ? new Date(dateString) : new Date();
+            const yesterday = new Date(base);
+            yesterday.setDate(yesterday.getDate() - 1);
+            return `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+        }
+
+        // Calculate time until next puzzle
+        function updateTimeUntilNext() {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            
+            const diff = tomorrow - now;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            timeUntilNextEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // Show stats popup
+        function showStats(title, usedSolution = false) {
+            const stats = loadStats();
+            
+            statsTitleEl.textContent = title;
+            todayPuzzleEl.textContent = `${currentPuzzle.start} → ${currentPuzzle.target}`;
+            
+            totalPlayedEl.textContent = stats.totalPlayed;
+            totalWinsEl.textContent = stats.totalWins;
+            winRateEl.textContent = stats.totalPlayed > 0 ? Math.round((stats.totalWins / stats.totalPlayed) * 100) + '%' : '0%';
+            currentStreakEl.textContent = stats.currentStreak;
+            
+            updateTimeUntilNext();
+            const timer = setInterval(updateTimeUntilNext, 1000);
+            
+            statsOverlayEl.classList.add('show');
+            
+            // Clear timer when popup closes
+            statsOverlayEl.dataset.timer = timer;
+        }
+
+        // Hide stats popup
+        function hideStats() {
+            statsOverlayEl.classList.remove('show');
+            const timer = statsOverlayEl.dataset.timer;
+            if (timer) {
+                clearInterval(parseInt(timer));
+            }
+        }
+
+        // Update the daily date display
+        function updateDailyDate() {
+            const d = selectedDateString ? new Date(selectedDateString) : new Date();
+            if (datePickerEl) datePickerEl.value = selectedDateString;
+        }
+
+        // Generate scrambled letters from all intermediate words
+        function generateAvailableLetters() {
+            availableLetters = [];
+            for (let i = 1; i < currentPuzzle.solution.length - 1; i++) {
+                availableLetters.push(...currentPuzzle.solution[i].split(''));
+            }
+            // Shuffle the letters
+            availableLetters = availableLetters.sort(() => Math.random() - 0.5);
+        }
+
+        // Load progress from localStorage
+        function loadProgress() {
+            const saved = localStorage.getItem('wordLadderProgress');
+            if (saved) {
+                const data = JSON.parse(saved);
+                const dayKey = `daily-${selectedDateString}`;
+                if (data[dayKey]) {
+                    userWords = data[dayKey].userWords || {};
+                    letterTimestamps = data[dayKey].letterTimestamps || {};
+                    gameWon = data[dayKey].won || false;
+                } else {
+                    userWords = {};
+                    letterTimestamps = {};
+                    gameWon = false;
+                }
+            }
+        }
+
+        // Save progress to localStorage
+        function saveProgress() {
+            const saved = localStorage.getItem('wordLadderProgress');
+            const data = saved ? JSON.parse(saved) : {};
+            const dayKey = `daily-${selectedDateString}`;
+            data[dayKey] = {
+                userWords: userWords,
+                letterTimestamps: letterTimestamps,
+                won: gameWon
+            };
+            localStorage.setItem('wordLadderProgress', JSON.stringify(data));
+        }
+
+        // Update display
+        function updateDisplay() {
+            // Build ladder
+            ladderContainerEl.innerHTML = '';
+            
+            // Start word
+            addLadderStep(0, currentPuzzle.start, true, false);
+            
+            // Intermediate words with edit distance indicators between them
+            for (let i = 1; i < currentPuzzle.solution.length - 1; i++) {
+                // Add edit distance indicator before this word
+                addEditDistanceIndicator(i);
+                
+                const word = userWords[i] || '';
+                const isSelected = i === selectedWordIndex;
+                addLadderStep(i, word, false, isSelected);
+            }
+            
+            // Edit distance indicator before target word
+            addEditDistanceIndicator(currentPuzzle.solution.length - 1);
+            
+            // Target word
+            addLadderStep(currentPuzzle.solution.length - 1, currentPuzzle.target, true, false);
+
+            // Update letter bag
+            updateLetterBag();
+
+            if (gameWon) {
+                showSolutionBtn.disabled = true;
+            }
+        }
+
+        function addEditDistanceIndicator(currentIndex) {
+            const prevIndex = currentIndex - 1;
+            const targetDistance = currentPuzzle.distances[prevIndex];
+            
+            // Get the two words to compare
+            let prevWord, currentWord;
+            
+            if (prevIndex === 0) {
+                prevWord = currentPuzzle.start;
+            } else {
+                prevWord = userWords[prevIndex] || '';
+            }
+            
+            if (currentIndex === currentPuzzle.solution.length - 1) {
+                currentWord = currentPuzzle.target;
+            } else {
+                currentWord = userWords[currentIndex] || '';
+            }
+            
+            const distanceRow = document.createElement('div');
+            distanceRow.className = 'edit-distance-row';
+            
+            let indicatorHTML;
+            if (prevWord && currentWord) {
+                const editDist = calculateEditDistance(prevWord, currentWord);
+                const isValid = editDist === targetDistance;
+                const className = isValid ? 'valid' : 'invalid';
+                if (isValid) {
+                    indicatorHTML = `<div class="edit-distance-indicator ${className}">
+                        <span class="distance-arrow">▲</span>
+                        <span>${targetDistance}</span>
+                        <span class="distance-arrow">▼</span>
+                    </div>`;
+                } else {
+                    // Show crossed out target and actual distance
+                    indicatorHTML = `<div class="edit-distance-indicator ${className}">
+                        <span class="distance-arrow">▲</span>
+                        <span class="distance-crossed">${targetDistance}</span>
+                        <span class="distance-arrow">▼</span>
+                    </div>`;
+                }
+            } else {
+                indicatorHTML = `<div class="edit-distance-indicator empty">
+                    <span class="distance-arrow">▲</span>
+                    <span>${targetDistance}</span>
+                    <span class="distance-arrow">▼</span>
+                </div>`;
+            }
+            
+            distanceRow.innerHTML = indicatorHTML;
+            ladderContainerEl.appendChild(distanceRow);
+        }
+
+        function addLadderStep(index, word, isFixed, isSelected) {
+            const stepDiv = document.createElement('div');
+            stepDiv.className = 'ladder-step';
+            stepDiv.dataset.index = index;
+            
+            if (!isFixed && !gameWon) {
+                stepDiv.style.cursor = 'pointer';
+                stepDiv.addEventListener('click', () => selectWordSlot(index));
+            }
+            
+            const wordLength = currentPuzzle.wordLengths[index];
+            let wordSlotHTML = '<div class="word-slot">';
+            
+            if (isFixed) {
+                // Show fixed words (start and end)
+                for (let letter of word) {
+                    wordSlotHTML += `<div class="letter-box filled">${letter}</div>`;
+                }
+            } else {
+                // Show user input or empty boxes
+                for (let i = 0; i < wordLength; i++) {
+                    const letter = word[i] || '';
+                    let className = 'letter-box';
+                    if (letter) {
+                        // Check if this letter is valid (available in bag)
+                        const isValid = isLetterValidInWord(word, i, index);
+                        if (isValid) {
+                            className += ' filled';
+                        } else {
+                            className += ' invalid-letter';
+                        }
+                    }
+                    if (isSelected && i === word.length) {
+                        className += ' cursor';
+                    }
+                    wordSlotHTML += `<div class="${className}">${letter}</div>`;
+                }
+            }
+            
+            wordSlotHTML += '</div>';
+            
+            // Add visual indicator for selected word
+            const selectedClass = isSelected ? ' selected-step' : '';
+            stepDiv.innerHTML = `<div class="${selectedClass}">${wordSlotHTML}</div>`;
+            
+            ladderContainerEl.appendChild(stepDiv);
+        }
+
+        function isLetterValidInWord(word, position, wordIndex) {
+            // Count how many of each letter are in the bag
+            const letterCounts = {};
+            availableLetters.forEach(letter => {
+                letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+            });
+            
+            // Get the timestamp of this letter
+            const thisTimestamp = letterTimestamps[wordIndex]?.[position] || 0;
+            
+            // Count how many of each letter were typed BEFORE this one (earlier timestamps)
+            const usedBeforeThis = {};
+            Object.entries(userWords).forEach(([idx, w]) => {
+                if (w) {
+                    for (let i = 0; i < w.length; i++) {
+                        const letter = w[i];
+                        const timestamp = letterTimestamps[idx]?.[i] || 0;
+                        
+                        // Only count letters that were typed before this one
+                        if (timestamp < thisTimestamp) {
+                            usedBeforeThis[letter] = (usedBeforeThis[letter] || 0) + 1;
+                        }
+                    }
+                }
+            });
+            
+            const letter = word[position];
+            const totalUsedBeforeThis = (usedBeforeThis[letter] || 0) + 1; // +1 for this letter itself
+            return (letterCounts[letter] || 0) >= totalUsedBeforeThis;
+        }
+
+        function selectWordSlot(index) {
+            if (gameWon || index === 0 || index === currentPuzzle.solution.length - 1) return;
+            selectedWordIndex = index;
+            updateDisplay();
+        }
+
+        function updateLetterBag() {
+            letterBagEl.innerHTML = '';
+            
+            // Count how many of each letter are used
+            const usedLetterCounts = {};
+            Object.values(userWords).forEach(word => {
+                for (let letter of word) {
+                    usedLetterCounts[letter] = (usedLetterCounts[letter] || 0) + 1;
+                }
+            });
+            
+            // Display available letters
+            const letterCounts = {};
+            availableLetters.forEach(letter => {
+                letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+            });
+            
+            availableLetters.forEach((letter, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'letter-tile';
+                tile.textContent = letter;
+                tile.dataset.letter = letter;
+                
+                // Check if this specific instance is used
+                const timesUsed = usedLetterCounts[letter] || 0;
+                const timesAvailable = letterCounts[letter];
+                const instanceNumber = availableLetters.slice(0, index + 1).filter(l => l === letter).length;
+                
+                if (instanceNumber <= timesUsed) {
+                    tile.classList.add('used');
+                }
+                
+                letterBagEl.appendChild(tile);
+            });
+        }
+
+        function handleKeyPress(e) {
+            if (gameWon) return;
+            
+            const key = e.key.toUpperCase();
+            
+            // Handle backspace
+            if (key === 'BACKSPACE') {
+                e.preventDefault();
+                const currentWord = userWords[selectedWordIndex] || '';
+                if (currentWord.length > 0) {
+                    userWords[selectedWordIndex] = currentWord.slice(0, -1);
+                    // Remove timestamp for the deleted letter
+                    if (letterTimestamps[selectedWordIndex]) {
+                        delete letterTimestamps[selectedWordIndex][currentWord.length - 1];
+                    }
+                    updateDisplay();
+                    validateCurrentWord();
+                    saveProgress();
+                }
+                return;
+            }
+            
+            // Handle letter input
+            if (key.length === 1 && key >= 'A' && key <= 'Z') {
+                e.preventDefault();
+                const currentWord = userWords[selectedWordIndex] || '';
+                const wordLength = currentPuzzle.wordLengths[selectedWordIndex];
+                
+                if (currentWord.length >= wordLength) {
+                    return;
+                }
+                
+                // Add the letter even if not available (will be shown in red)
+                userWords[selectedWordIndex] = currentWord + key;
+                
+                // Track timestamp for this letter
+                if (!letterTimestamps[selectedWordIndex]) {
+                    letterTimestamps[selectedWordIndex] = {};
+                }
+                letterTimestamps[selectedWordIndex][currentWord.length] = Date.now();
+                
+                // Check if word is now complete
+                if (userWords[selectedWordIndex].length === wordLength) {
+                    // Auto-advance to next word
+                    const nextIndex = selectedWordIndex + 1;
+                    if (nextIndex < currentPuzzle.solution.length - 1) {
+                        selectedWordIndex = nextIndex;
+                    }
+                    
+                    // Check if entire puzzle is complete
+                    checkIfPuzzleComplete();
+                }
+                
+                updateDisplay();
+                validateCurrentWord();
+                saveProgress();
+            }
+        }
+
+        function isLetterAvailable(letter) {
+            // Count how many of this letter are in the bag
+            const totalAvailable = availableLetters.filter(l => l === letter).length;
+            
+            // Count how many are already used
+            let usedCount = 0;
+            Object.values(userWords).forEach(word => {
+                for (let l of word) {
+                    if (l === letter) usedCount++;
+                }
+            });
+            
+            return usedCount < totalAvailable;
+        }
+
+        function validateCurrentWord() {
+            // Silent validation - visual indicators show the errors
+        }
+
+        function checkIfPuzzleComplete() {
+            // Check if all intermediate words are filled
+            for (let i = 1; i < currentPuzzle.solution.length - 1; i++) {
+                const expectedLength = currentPuzzle.wordLengths[i];
+                if (!userWords[i] || userWords[i].length !== expectedLength) {
+                    return; // Not complete yet
+                }
+            }
+            
+            // All words filled, now validate the entire solution
+            setTimeout(() => {
+                const isValid = validateEntireLadder();
+                if (isValid) {
+                    gameWon = true;
+                    showVictory();
+                    saveProgress();
+                }
+                // If invalid, just don't show victory - visual indicators show the problem
+            }, 300); // Small delay for better UX
+        }
+
+        function validateEntireLadder() {
+            const fullLadder = [currentPuzzle.start];
+            
+            for (let i = 1; i < currentPuzzle.solution.length - 1; i++) {
+                fullLadder.push(userWords[i]);
+            }
+            fullLadder.push(currentPuzzle.target);
+            
+            // Validate each step - must match target distance
+            for (let i = 1; i < fullLadder.length; i++) {
+                const editDist = calculateEditDistance(fullLadder[i-1], fullLadder[i]);
+                const targetDist = currentPuzzle.distances[i-1];
+                if (editDist !== targetDist) {
+                    return false;
+                }
+            }
+            
+            // Validate that only letters from the bag are used
+            const letterCounts = {};
+            availableLetters.forEach(letter => {
+                letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+            });
+            
+            const usedLetters = {};
+            Object.values(userWords).forEach(word => {
+                for (let letter of word) {
+                    usedLetters[letter] = (usedLetters[letter] || 0) + 1;
+                }
+            });
+            
+            // Check if we used more of any letter than available
+            for (let letter in usedLetters) {
+                if (usedLetters[letter] > (letterCounts[letter] || 0)) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        function calculateEditDistance(word1, word2) {
+            // Levenshtein distance - supports insertions, deletions, and substitutions
+            const len1 = word1.length;
+            const len2 = word2.length;
+            
+            // Create a 2D array for dynamic programming
+            const dp = Array(len1 + 1).fill(null).map(() => Array(len2 + 1).fill(0));
+            
+            // Initialize base cases
+            for (let i = 0; i <= len1; i++) dp[i][0] = i;
+            for (let j = 0; j <= len2; j++) dp[0][j] = j;
+            
+            // Fill the DP table
+            for (let i = 1; i <= len1; i++) {
+                for (let j = 1; j <= len2; j++) {
+                    if (word1[i-1] === word2[j-1]) {
+                        dp[i][j] = dp[i-1][j-1]; // No operation needed
+                    } else {
+                        dp[i][j] = Math.min(
+                            dp[i-1][j] + 1,    // Deletion
+                            dp[i][j-1] + 1,    // Insertion
+                            dp[i-1][j-1] + 1   // Substitution
+                        );
+                    }
+                }
+            }
+            
+            return dp[len1][len2];
+        }
+
+        function showMessage(text, type) {
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            setTimeout(() => {
+                if (messageEl.className === `message ${type}`) {
+                    messageEl.className = 'message';
+                }
+            }, 3000);
+        }
+
+        function showVictory() {
+            const stats = updateStats(true, false);
+            showStats('🎉 Puzzle Complete!', false);
+        }
+
+        function showSolution() {
+            // Fill in the solution
+            for (let i = 1; i < currentPuzzle.solution.length - 1; i++) {
+                userWords[i] = currentPuzzle.solution[i];
+                // Add timestamps for solution letters
+                if (!letterTimestamps[i]) {
+                    letterTimestamps[i] = {};
+                }
+                const now = Date.now();
+                for (let j = 0; j < currentPuzzle.solution[i].length; j++) {
+                    letterTimestamps[i][j] = now + j; // Sequential timestamps
+                }
+            }
+            
+            gameWon = true;
+            updateDisplay();
+            saveProgress();
+            
+            const stats = updateStats(false, true);
+            showStats('💡 Solution', true);
+        }
+
+        function resetPuzzle() {
+            selectedWordIndex = 1;
+            userWords = {};
+            letterTimestamps = {};
+            gameWon = false;
+            showSolutionBtn.disabled = false;
+            hideStats();
+            updateDisplay();
+            saveProgress();
+        }
+
+        // Event listeners
+        showSolutionBtn.addEventListener('click', showSolution);
+        resetBtn.addEventListener('click', resetPuzzle);
+        closeInstructionsBtn.addEventListener('click', hideInstructions);
+        startPlayingBtn.addEventListener('click', hideInstructions);
+        helpBtn.addEventListener('click', showInstructions);
+        closeStatsBtn.addEventListener('click', hideStats);
+        
+        // Close instructions when clicking outside popup
+        instructionsOverlayEl.addEventListener('click', (e) => {
+            if (e.target === instructionsOverlayEl) {
+                hideInstructions();
+            }
+        });
+        
+        // Close stats when clicking outside popup
+        statsOverlayEl.addEventListener('click', (e) => {
+            if (e.target === statsOverlayEl) {
+                hideStats();
+            }
+        });
+
+        // Date picker: load puzzles for selected date
+        if (datePickerEl) {
+            // initialize picker value
+            datePickerEl.value = selectedDateString;
+            datePickerEl.addEventListener('change', (e) => {
+                selectedDateString = e.target.value || getTodayString();
+                currentPuzzle = puzzles[getPuzzleIndexForDate(selectedDateString)];
+                selectedWordIndex = 1;
+                userWords = {};
+                letterTimestamps = {};
+                gameWon = false;
+                showSolutionBtn.disabled = false;
+                // Load any saved progress for this date
+                loadProgress();
+                generateAvailableLetters();
+                updateDailyDate();
+                updateDisplay();
+            });
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
