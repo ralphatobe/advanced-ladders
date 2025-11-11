@@ -1004,8 +1004,8 @@
             for (let i = 1; i < currentPuzzle.solution.length - 1; i++) {
                 availableLetters.push(...currentPuzzle.solution[i].split(''));
             }
-            // Shuffle the letters
-            availableLetters = availableLetters.sort(() => Math.random() - 0.5);
+            // Alphabetize the letters (case-insensitive)
+            availableLetters = availableLetters.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
         }
 
         // Load progress from localStorage
