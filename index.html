@@ -1127,24 +1127,27 @@
             
             // Get the two words to compare
             let prevWord, currentWord;
+            let prevComplete, currentComplete;
             
             if (prevIndex === 0) {
                 prevWord = currentPuzzle.start;
             } else {
                 prevWord = userWords[prevIndex] || '';
             }
+            prevComplete = prevWord.length === currentPuzzle.wordLengths[prevIndex];
             
             if (currentIndex === currentPuzzle.solution.length - 1) {
                 currentWord = currentPuzzle.target;
             } else {
                 currentWord = userWords[currentIndex] || '';
             }
+            currentComplete = currentWord.length === currentPuzzle.wordLengths[currentIndex];
             
             const distanceRow = document.createElement('div');
             distanceRow.className = 'edit-distance-row';
             
             let indicatorHTML;
-            if (prevWord && currentWord) {
+            if (prevWord && currentWord && prevComplete && currentComplete) {
                 const editDist = calculateEditDistance(prevWord, currentWord);
                 const isValid = editDist === targetDistance;
                 const className = isValid ? 'valid' : 'invalid';
