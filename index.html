@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced Ladders</title>
-
-    <!-- FAVICONS: add these lines -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/png" sizes="24x24" href="/favicon.png">
     <meta name="theme-color" content="#667eea">
-    <!-- end favicons -->
-
     <style>
         * {
             margin: 0;
@@ -742,11 +738,11 @@
                 <button class="close-btn" id="closeInstructions">✕</button>
                 <h2>How to Play</h2>
                 <div class="instructions-content">
-                    <p class="goal">Transform the start word into the end word, one letter at a time.</p>
+                    <p class="goal">Transform the start word into the end word, one word at a time.</p>
                     
                     <div class="rule-box">
                         <div class="rule-number">1</div>
-                        <div class="rule-text">Click any empty word to select it</div>
+                        <div class="rule-text">Click any word to select it</div>
                     </div>
                     
                     <div class="rule-box">
@@ -756,11 +752,24 @@
                     
                     <div class="rule-box">
                         <div class="rule-number">3</div>
-                        <div class="rule-text">Each word must differ by exactly one letter</div>
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <div class="rule-text">Word pairs are</div>
+                            <div class="edit-distance-indicator empty" style="min-width: 0px;">
+                                <span class="distance-arrow">▲</span>
+                                <span class="distance">N</span>
+                                <span class="distance-arrow">▼</span>
+                            </div>
+                            <div class="rule-text">edits apart</div>
+                        </div>
+                    </div>
+                    
+                    <div class="rule-box">
+                        <div class="rule-number">4</div>
+                        <div class="rule-text">An edit is an insertion, deletion, or substitution</div>
                     </div>
                     
                     <div class="hint-box">
-                        💡 All letters you need are in the bag below
+                        All letters used are in the box below the ladder
                     </div>
                 </div>
                 <button class="start-btn" id="startPlaying">Start Playing</button>
@@ -1159,7 +1168,7 @@
                     if (isSelected && i === word.length) {
                         className += ' cursor';
                     }
-                    wordSlotHTML += `<div class="${className}">${letter}</div>`;
+                    wordSlotHTML += `<input type="text" class="${className}" maxlength="1" value="${letter}" style="text-align:center;"/>`;
                 }
             }
             
