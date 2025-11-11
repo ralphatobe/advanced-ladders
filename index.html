@@ -870,6 +870,34 @@
             generateAvailableLetters();
             updateDisplay();
             document.addEventListener('keydown', handleKeyPress);
+
+            // ADD THIS CODE FOR MOBILE KEYBOARD SUPPORT:
+            // Create hidden input for mobile
+            const mobileInput = document.createElement('input');
+            mobileInput.type = 'text';
+            mobileInput.id = 'mobileInput';
+            mobileInput.style.position = 'absolute';
+            mobileInput.style.opacity = '0';
+            mobileInput.style.pointerEvents = 'none';
+            document.body.appendChild(mobileInput);
+            
+            // Focus hidden input on any touch/click to trigger keyboard
+            document.addEventListener('touchstart', () => {
+                if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                    mobileInput.focus();
+                }
+            });
+            
+            // Listen for input on the hidden field
+            mobileInput.addEventListener('input', (e) => {
+                const key = e.target.value.slice(-1).toUpperCase();
+                e.target.value = '';
+                if (key) {
+                    handleKeyPress({ key: key, preventDefault: () => {} });
+                }
+            });
+            // END MOBILE KEYBOARD SUPPORT
+            
             checkFirstVisit();
         }
 
