@@ -704,6 +704,10 @@
                         <div class="stat-label">Today's Puzzle</div>
                         <div class="stat-value" id="todayPuzzle">CAT → DOG</div>
                     </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Completion</div>
+                        <div class="stat-value" id="completionTime">--:--</div>
+                    </div>
                     
                     <div class="divider"></div>
                     
@@ -857,6 +861,7 @@
         const winRateEl = document.getElementById('winRate');
         const currentStreakEl = document.getElementById('currentStreak');
         const timeUntilNextEl = document.getElementById('timeUntilNext');
+        const completionTimeEl = document.getElementById('completionTime');
         const datePickerEl = document.getElementById('datePicker');
         const instructionsOverlayEl = document.getElementById('instructionsOverlay');
         const closeInstructionsBtn = document.getElementById('closeInstructions');
@@ -978,6 +983,12 @@
                     }
 
                     stats.maxStreak = Math.max(stats.maxStreak, stats.currentStreak);
+                    // Record completion time if we have a start time
+                    if (puzzleStartTime) {
+                        const elapsedSeconds = Math.round((Date.now() - puzzleStartTime) / 1000);
+                        stats.completionSeconds = elapsedSeconds;
+                        console.log('Completion time recorded:', elapsedSeconds, 'seconds');
+                    }
                 } else if (!won && !usedSolution) {
                     // Lost - reset streak
                     stats.currentStreak = 0;
@@ -1012,6 +1023,18 @@
             timeUntilNextEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
+        // Format seconds into M:SS or H:MM:SS when large
+        function formatSeconds(totalSeconds) {
+            if (totalSeconds === null || totalSeconds === undefined) return '--:--';
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            if (hours > 0) {
+                return `${hours}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+            }
+            return `${minutes}:${String(seconds).padStart(2,'0')}`;
+        }
+
         // Show stats popup
         function showStats(title, usedSolution = false) {
             const stats = loadStats();
@@ -1023,6 +1046,14 @@
             totalWinsEl.textContent = stats.totalWins;
             winRateEl.textContent = stats.totalPlayed > 0 ? Math.round((stats.totalWins / stats.totalPlayed) * 100) + '%' : '0%';
             currentStreakEl.textContent = stats.currentStreak;
+            if (completionTimeEl) {
+                if (stats.completionSeconds != null) {
+                    const time = formatSeconds(stats.completionSeconds);
+                    completionTimeEl.textContent = time;
+                } else {
+                    completionTimeEl.textContent = '--:--';
+                }
+            }
             
             updateTimeUntilNext();
             const timer = setInterval(updateTimeUntilNext, 1000);
@@ -1068,6 +1099,7 @@
                     userWords = data[dayKey].userWords || {};
                     letterTimestamps = data[dayKey].letterTimestamps || {};
                     gameWon = data[dayKey].won || false;
+                    puzzleStartTime = data[dayKey].startTime || Date.now();
                 } else {
                     userWords = {};
                     letterTimestamps = {};
@@ -1084,7 +1116,8 @@
             data[dayKey] = {
                 userWords: userWords,
                 letterTimestamps: letterTimestamps,
-                won: gameWon
+                won: gameWon,
+                startTime: puzzleStartTime
             };
             localStorage.setItem('wordLadderProgress', JSON.stringify(data));
         }
