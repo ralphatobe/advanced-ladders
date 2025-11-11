@@ -1151,20 +1151,11 @@
                 const editDist = calculateEditDistance(prevWord, currentWord);
                 const isValid = editDist === targetDistance;
                 const className = isValid ? 'valid' : 'invalid';
-                if (isValid) {
-                    indicatorHTML = `<div class="edit-distance-indicator ${className}">
-                        <span class="distance-arrow">▲</span>
-                        <span>${targetDistance}</span>
-                        <span class="distance-arrow">▼</span>
-                    </div>`;
-                } else {
-                    // Show crossed out target and actual distance
-                    indicatorHTML = `<div class="edit-distance-indicator ${className}">
-                        <span class="distance-arrow">▲</span>
-                        <span class="distance-crossed">${targetDistance}</span>
-                        <span class="distance-arrow">▼</span>
-                    </div>`;
-                }
+                indicatorHTML = `<div class="edit-distance-indicator ${className}">
+                    <span class="distance-arrow">▲</span>
+                    <span>${targetDistance}</span>
+                    <span class="distance-arrow">▼</span>
+                </div>`;
             } else {
                 indicatorHTML = `<div class="edit-distance-indicator empty">
                     <span class="distance-arrow">▲</span>
