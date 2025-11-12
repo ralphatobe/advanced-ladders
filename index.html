@@ -1563,6 +1563,13 @@
 
         // Date picker: load puzzles for selected date
         if (datePickerEl) {
+            // Set constraints on date picker
+            const startDate = '2025-01-01'; // Fixed start date - change this as needed
+            const today = getTodayString();
+            
+            datePickerEl.min = startDate; // Disable dates before this
+            datePickerEl.max = today;    // Disable future dates
+            
             // initialize picker value
             datePickerEl.value = selectedDateString;
             datePickerEl.addEventListener('change', (e) => {
