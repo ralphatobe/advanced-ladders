@@ -750,7 +750,7 @@
                     
                     <div class="rule-box">
                         <div class="rule-number">2</div>
-                        <div class="rule-text">Type letters to fill in the word</div>
+                        <div class="rule-text">Type to enter the word</div>
                     </div>
                     
                     <div class="rule-box">
@@ -817,6 +817,62 @@
                 solution: ['EVER', 'OVER', 'MOVES', 'MOVIES', 'MOVING', 'MORNING', 'MOUNTING', 'MOUNTAIN'],
                 wordLengths: [4, 4, 5, 6, 6, 7, 8, 8],
                 distances: [1, 2, 1, 2, 2, 2, 2]
+            },
+            {
+                start: "SLOW", 
+                target: "HEADLINE", 
+                solution: ["SLOW", "SALON", "SATIN", "SEATING", "HEADING", "HEADLINE"], 
+                wordLengths: [4, 5, 5, 7, 7, 8], 
+                distances: [2, 2, 2, 2, 2]
+            }, 
+            {
+                start: "MART", 
+                target: "DESTROY", 
+                solution: ["MART", "BARE", "LANE", "LANCE", "LONE", "NONE", "LONG", "LOSING", "POSING", "PISSING", "FISTING", "TESTING", "DESTINY", "DESTROY"], 
+                wordLengths: [4, 4, 4, 5, 4, 4, 4, 6, 6, 7, 7, 7, 7, 7], 
+                distances: [2, 2, 1, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2]
+            }, 
+            {
+                start: "AGED", 
+                target: "SUCCEED", 
+                solution: ["AGED", "AMEND", "ATTEND", "EXTEND", "EXCEED", "EXCESS", "ACCESS", "SUCCESS", "SUCCEED"], 
+                wordLengths: [4, 5, 6, 6, 6, 6, 6, 7, 7], 
+                distances: [2, 2, 2, 2, 2, 2, 2, 2]
+            }, 
+            {
+                start: "SOUL", 
+                target: "SURVIVE", 
+                solution: ["SOUL", "SONG", "SING", "SAVING", "SKATING", "SEATING", "SERVING", "SERVICE", "SURVIVE"], 
+                wordLengths: [4, 4, 4, 6, 7, 7, 7, 7, 7], 
+                distances: [2, 1, 2, 2, 1, 2, 2, 2]
+            }, 
+            {
+                start: "CAUSE", 
+                target: "CLINIC", 
+                solution: ["CAUSE", "CAUSED", "CAUSES", "CRUISES", "CRISIS", "CRITICS", "CLINICS", "CLINIC"], 
+                wordLengths: [5, 6, 6, 7, 6, 7, 7, 6], 
+                distances: [1, 1, 2, 2, 2, 2, 1]
+            }, 
+            {
+                start: "KIND", 
+                target: "PROMPTLY", 
+                solution: ["KIND", "PINS", "PROS", "PROMO", "PROMPT", "PROMPTLY"], 
+                wordLengths: [4, 4, 4, 5, 6, 8], 
+                distances: [2, 2, 2, 2, 2]
+            }, 
+            {
+                start: "BOAT", 
+                target: "HUNTING", 
+                solution: ["BOAT", "BORN", "BORING", "LOSING", "HOSTING", "HUNTING"], 
+                wordLengths: [4, 4, 6, 6, 7, 7], 
+                distances: [2, 2, 2, 2, 2]
+            }, 
+            {
+                start: "VAST", 
+                target: "STEREO", 
+                solution: ["VAST", "EAST", "SEAS", "SEES", "STEEL", "STEREO"], 
+                wordLengths: [4, 4, 4, 4, 5, 6], 
+                distances: [1, 2, 1, 2, 2]
             }
         ];
 
@@ -1104,6 +1160,7 @@
                     userWords = {};
                     letterTimestamps = {};
                     gameWon = false;
+                    puzzleStartTime = Date.now();
                 }
             }
         }
