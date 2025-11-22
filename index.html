@@ -8,6 +8,10 @@
     <link rel="icon" type="image/png" sizes="24x24" href="favicon.png">
     <meta name="theme-color" content="#77216f">
     <style>
+        :root {
+            --letter-bag-height: 96px;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -28,6 +32,7 @@
             background: white;
             border-radius: 16px;
             padding: 40px;
+            padding-bottom: calc(var(--letter-bag-height) + 40px);
             max-width: 600px;
             width: 100%;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -191,15 +196,38 @@
         }
 
         .letter-bag {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 0px;
+            z-index: 200;
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            padding: 10px;
+            padding: 12px 16px;
+            min-height: var(--letter-bag-height);
+            max-height: 160px;
+            overflow-y: auto;
             background: #f0f4ff;
-            border-radius: 8px;
+            border-radius: 12px 12px 0px 0px;
             border: 2px dashed #77216f;
             align-items: center;
             justify-content: center;
+            width: min(600px, calc(100% - 40px));
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Responsive tweaks for narrow screens */
+        @media (max-width: 480px) {
+            :root { --letter-bag-height: 84px; }
+            .letter-bag {
+                padding: 10px;
+                bottom: 12px;
+                width: calc(100% - 32px);
+            }
+            .container {
+                padding-bottom: calc(var(--letter-bag-height) + 28px);
+            }
         }
 
         .letter-tile {
@@ -783,97 +811,13 @@
     <script>
         // Puzzle configurations with predefined solutions
         const puzzles = [
-            { 
-                start: 'AWOKEN', 
-                target: 'SAVANNAH', 
-                solution: ['AWOKEN', 'SPOKEN', 'SPOKE', 'SAKE', 'SAGE', 'SAVAGE', 'SAVANNAH'],
-                wordLengths: [6, 6, 5, 4, 4, 6, 8],
-                distances: [2, 1, 2, 1, 2, 4]
+            {
+                start: 'START',
+                target: 'WINS',
+                solution: ['START', 'STARTS', 'STANDS', 'HANDS', 'AIDS', 'WINS'],
+                wordLengths: [5, 6, 6, 5, 4, 4],
+                distances: [1, 2, 2, 2, 2]
             },
-            { 
-                start: 'UNRAVELING', 
-                target: 'JUNGLE', 
-                solution: ['UNRAVELING', 'TRAVELING', 'TRAVEL', 'TRADE', 'JADE', 'JUDGE', 'JUNGLE'],
-                wordLengths: [10, 9, 6, 5, 4, 5, 6],
-                distances: [2, 3, 2, 2, 2, 2]
-            },
-            { 
-                start: 'GRIEVING', 
-                target: 'TUNDRA', 
-                solution: ['GRIEVING', 'GIVING', 'GOING', 'GONE', 'TONE', 'TONER', 'TUNER', 'TUNDRA'],
-                wordLengths: [8, 6, 5, 4, 4, 5, 5, 6],
-                distances: [2, 2, 2, 1, 1, 1, 2]
-            },
-            { 
-                start: 'VELVET', 
-                target: 'DESERT', 
-                solution: ['VELVET', 'VALVE', 'DALE', 'DEAL', 'DEAR', 'DEER', 'DESERT'],
-                wordLengths: [6, 5, 4, 4, 4, 4, 6],
-                distances: [2, 2, 2, 1, 1, 2]
-            },
-            { 
-                start: 'EVER', 
-                target: 'MOUNTAIN', 
-                solution: ['EVER', 'OVER', 'MOVES', 'MOVIES', 'MOVING', 'MORNING', 'MOUNTING', 'MOUNTAIN'],
-                wordLengths: [4, 4, 5, 6, 6, 7, 8, 8],
-                distances: [1, 2, 1, 2, 2, 2, 2]
-            },
-            {
-                start: "SLOW", 
-                target: "HEADLINE", 
-                solution: ["SLOW", "SALON", "SATIN", "SEATING", "HEADING", "HEADLINE"], 
-                wordLengths: [4, 5, 5, 7, 7, 8], 
-                distances: [2, 2, 2, 2, 2]
-            }, 
-            {
-                start: "MART", 
-                target: "DESTROY", 
-                solution: ["MART", "BARE", "LANE", "LANCE", "LONE", "NONE", "LONG", "LOSING", "POSING", "PISSING", "FISTING", "TESTING", "DESTINY", "DESTROY"], 
-                wordLengths: [4, 4, 4, 5, 4, 4, 4, 6, 6, 7, 7, 7, 7, 7], 
-                distances: [2, 2, 1, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2]
-            }, 
-            {
-                start: "AGED", 
-                target: "SUCCEED", 
-                solution: ["AGED", "AMEND", "ATTEND", "EXTEND", "EXCEED", "EXCESS", "ACCESS", "SUCCESS", "SUCCEED"], 
-                wordLengths: [4, 5, 6, 6, 6, 6, 6, 7, 7], 
-                distances: [2, 2, 2, 2, 2, 2, 2, 2]
-            }, 
-            {
-                start: "SOUL", 
-                target: "SURVIVE", 
-                solution: ["SOUL", "SONG", "SING", "SAVING", "SKATING", "SEATING", "SERVING", "SERVICE", "SURVIVE"], 
-                wordLengths: [4, 4, 4, 6, 7, 7, 7, 7, 7], 
-                distances: [2, 1, 2, 2, 1, 2, 2, 2]
-            }, 
-            {
-                start: "CAUSE", 
-                target: "CLINIC", 
-                solution: ["CAUSE", "CAUSED", "CAUSES", "CRUISES", "CRISIS", "CRITICS", "CLINICS", "CLINIC"], 
-                wordLengths: [5, 6, 6, 7, 6, 7, 7, 6], 
-                distances: [1, 1, 2, 2, 2, 2, 1]
-            }, 
-            {
-                start: "KIND", 
-                target: "PROMPTLY", 
-                solution: ["KIND", "PINS", "PROS", "PROMO", "PROMPT", "PROMPTLY"], 
-                wordLengths: [4, 4, 4, 5, 6, 8], 
-                distances: [2, 2, 2, 2, 2]
-            }, 
-            {
-                start: "BOAT", 
-                target: "HUNTING", 
-                solution: ["BOAT", "BORN", "BORING", "LOSING", "HOSTING", "HUNTING"], 
-                wordLengths: [4, 4, 6, 6, 7, 7], 
-                distances: [2, 2, 2, 2, 2]
-            }, 
-            {
-                start: "VAST", 
-                target: "STEREO", 
-                solution: ["VAST", "EAST", "SEAS", "SEES", "STEEL", "STEREO"], 
-                wordLengths: [4, 4, 4, 4, 5, 6], 
-                distances: [1, 2, 1, 2, 2]
-            }
         ];
 
         // Get today's date as a string (YYYY-MM-DD)
