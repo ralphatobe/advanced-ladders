@@ -979,48 +979,6 @@
             generateAvailableLetters();
             updateDisplay();
             document.addEventListener('keydown', handleKeyPress);
-            
-            // Create hidden input for mobile
-            const mobileInput = document.createElement('input');
-            mobileInput.type = 'text';
-            mobileInput.id = 'mobileInput';
-            mobileInput.style.position = 'absolute';
-            mobileInput.style.opacity = '0';
-            mobileInput.style.pointerEvents = 'none';
-            mobileInput.setAttribute('inputmode', 'text');
-            document.body.appendChild(mobileInput);
-            
-            // Keep input focused on mobile
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            
-            if (isMobile) {
-                // Focus on load
-                setTimeout(() => mobileInput.focus(), 100);
-                
-                // Refocus if it loses focus (but not if game is won)
-                mobileInput.addEventListener('blur', () => {
-                    if (!gameWon) {
-                        setTimeout(() => mobileInput.focus(), 0);
-                    }
-                });
-                
-                // Also refocus on any click/touch
-                document.addEventListener('click', () => {
-                    if (!gameWon) {
-                        mobileInput.focus();
-                    }
-                });
-            }
-            
-            // Listen for input on the hidden field
-            mobileInput.addEventListener('input', (e) => {
-                const key = e.target.value.slice(-1).toUpperCase();
-                e.target.value = '';
-                if (key) {
-                    handleKeyPress({ key: key, preventDefault: () => {} });
-                }
-            });
-            
             checkFirstVisit();
         }
 
