@@ -809,15 +809,42 @@
     </div>
 
     <script>
-        // Puzzle configurations with predefined solutions
         const puzzles = [
-            {
-                start: 'START',
-                target: 'WINS',
-                solution: ['START', 'STARTS', 'STANDS', 'HANDS', 'AIDS', 'WINS'],
-                wordLengths: [5, 6, 6, 5, 4, 4],
-                distances: [1, 2, 2, 2, 2]
-            },
+            ['START', 'STARTS', 'STANDS', 'HANDS', 'AIDS', 'WINS'],
+            ['STRONGER', 'STROLLER', 'ROLLER', 'ROLL', 'RELY', 'REELS'],
+            ['IMPULSE', 'PULSE', 'PARSE', 'WORSE', 'WARE', 'WARM'],
+            ['LIFTED', 'FITTED', 'TITLED', 'FILED', 'TIMED', 'AIMED'],
+            ['SCENE', 'STONE', 'SPOKE', 'SHOE', 'HOSE', 'RISE'],
+            ['LOADER', 'LOCKER', 'LOCKS', 'LOCUS', 'BLOCKS', 'SHOCKS'],
+            ['PRAY', 'PREY', 'THEY', 'THIN', 'TWINS', 'MAINS'],
+            ['HIMSELF', 'ITSELF', 'SELF', 'SELLS', 'TELLS', 'CALLS'],
+            ['ROUTER', 'ROLLER', 'CALLER', 'WALKER', 'WALLET', 'WALNUT'],
+            ['REFUGE', 'REFUND', 'REBOUND', 'REBOUNDS', 'ROUNDS', 'ROUNDED'],
+            ['ITALIAN', 'ITALIC', 'STATIC', 'STATUS', 'STAGES', 'SNAKES'],
+            ['SPECIES', 'SPIES', 'SHIPS', 'SITS', 'SUITE', 'SMILE'],
+            ['JACK', 'PACE', 'MADE', 'MALE', 'BASE', 'BEAST'],
+            ['RETIRED', 'DESIRED', 'DESIGNED', 'UNSIGNED', 'ASSIGNED', 'ALIGNED'],
+            ['TRAVEL', 'TRAVELER', 'TRAILER', 'TRAINER', 'TRACKER', 'HACKER'],
+            ['ENABLE', 'VIABLE', 'VILLE', 'PILE', 'PICK', 'TICK'],
+            ['GOLD', 'GOAL', 'EVAL', 'ORAL', 'BRAS', 'BROS'],
+            ['MAKING', 'MIXING', 'BIKING', 'PICKING', 'LICKING', 'LOCKING'],
+            ['TWINK', 'TANK', 'LANG', 'SONG', 'SOME', 'MOLE'],
+            ['IMPLANTS', 'PLANTS', 'PARTS', 'PASTA', 'WASTE', 'WHITE'],
+            ['ADVISE', 'ADVERSE', 'ADVERTS', 'ALERTS', 'LETS', 'META'],
+            ['FOREVER', 'FORMER', 'FOLDER', 'FILTER', 'WINTER', 'WINE'],
+            ['SLAVES', 'SAVERS', 'SAVE', 'LIVE', 'LIMO', 'LISP'],
+            ['OVENS', 'LOVES', 'LOTUS', 'LOSS', 'MISS', 'MOST'],
+            ['STRIPES', 'STRIPE', 'SCRIPT', 'SCRAP', 'SCRUB', 'STUB'],
+            ['DENIED', 'DECIDED', 'DECADES', 'DECODER', 'ENCODER', 'ENCORE'],
+            ['SENATORS', 'SENSORS', 'SENIORS', 'SENSORY', 'SENSOR', 'SECTOR'],
+            ['POEMS', 'PORTS', 'POST', 'FOOT', 'LOOK', 'WOOL'],
+            ['USER', 'UNDER', 'FOUNDER', 'WOUNDED', 'WOUNDS', 'WOULD'],
+            ['THINK', 'TICK', 'STACK', 'STUCK', 'DUCK', 'SUCKS'],
+            ['ADULTS', 'FAULTS', 'FATS', 'CAMS', 'CANE', 'RARE'],
+            ['HERBAL', 'HEAL', 'SHEAR', 'SHELL', 'HULL', 'HALLS'],
+            ['POTTER', 'POTTERY', 'LOTTERY', 'BATTERY', 'ARTERY', 'ARCHERY'],
+            ['FLOOR', 'FOUR', 'SOUL', 'SOUTH', 'SUCH', 'SECT'],
+            ['ENCODER', 'ENCORE', 'INCOME', 'BECOME', 'COME', 'DONE'],
         ];
 
         // Get today's date as a string (YYYY-MM-DD)
@@ -826,47 +853,29 @@
             return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         }
 
-        // Selected date (defaults to today). Change this to load puzzles for other days.
-        let selectedDateString = getTodayString();
-
-        // Get puzzle index for an arbitrary date string (YYYY-MM-DD)
         function getPuzzleIndexForDate(dateString) {
-            let hash = 0;
-            for (let i = 0; i < dateString.length; i++) {
-                hash = ((hash << 5) - hash) + dateString.charCodeAt(i);
-                hash = hash & hash;
+            const START_DATE = '2025-11-01';
+            if (!dateString) return 0;
+
+            // Parse YYYY-MM-DD into a UTC timestamp to avoid timezone shifts
+            function parseDateUTC(s) {
+                const parts = s.split('-').map(Number);
+                if (parts.length !== 3 || parts.some(isNaN)) return NaN;
+                return Date.UTC(parts[0], parts[1] - 1, parts[2]);
             }
-            return Math.abs(hash) % puzzles.length;
+
+            const startTs = parseDateUTC(START_DATE);
+            const targetTs = parseDateUTC(dateString);
+            if (isNaN(startTs) || isNaN(targetTs)) return 0;
+
+            const dayMs = 24 * 60 * 60 * 1000;
+            const diffDays = Math.floor((targetTs - startTs) / dayMs);
+
+            if (diffDays <= 0) return 0;
+
+            // Wrap around the available puzzles
+            return diffDays % puzzles.length;
         }
-
-        let currentPuzzle = puzzles[getPuzzleIndexForDate(selectedDateString)];
-        let selectedWordIndex = 1; // Which word slot is selected
-        let userWords = {}; // Store user's words for each step
-        let letterTimestamps = {}; // Track when each letter was added: {wordIndex: {position: timestamp}}
-        let availableLetters = [];
-        let gameWon = false;
-
-        // DOM elements
-        const ladderContainerEl = document.getElementById('ladderContainer');
-        const letterBagEl = document.getElementById('letterBag');
-        const messageEl = document.getElementById('message');
-        const showSolutionBtn = document.getElementById('showSolutionBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const statsOverlayEl = document.getElementById('statsOverlay');
-        const closeStatsBtn = document.getElementById('closeStats');
-        const statsTitleEl = document.getElementById('statsTitle');
-        const todayPuzzleEl = document.getElementById('todayPuzzle');
-        const totalPlayedEl = document.getElementById('totalPlayed');
-        const totalWinsEl = document.getElementById('totalWins');
-        const winRateEl = document.getElementById('winRate');
-        const currentStreakEl = document.getElementById('currentStreak');
-        const timeUntilNextEl = document.getElementById('timeUntilNext');
-        const completionTimeEl = document.getElementById('completionTime');
-        const datePickerEl = document.getElementById('datePicker');
-        const instructionsOverlayEl = document.getElementById('instructionsOverlay');
-        const closeInstructionsBtn = document.getElementById('closeInstructions');
-        const startPlayingBtn = document.getElementById('startPlaying');
-        const helpBtn = document.getElementById('helpBtn');
 
         // Initialize game
         function init() {
@@ -1492,6 +1501,31 @@
             return dp[len1][len2];
         }
 
+        // Derive the other puzzle fields from the stored `solution` array.
+        function derivePuzzle(p) {
+            if (!p) return null;
+            // Support both the new list-of-lists format and the old
+            // object-with-solution format for backward compatibility.
+            const solution = Array.isArray(p) ? p.slice() : (p.solution ? p.solution.slice() : null);
+            if (!solution) return null;
+            const start = solution[0];
+            const target = solution[solution.length - 1];
+            const wordLengths = solution.map(w => w.length);
+
+            const distances = [];
+            for (let i = 1; i < solution.length; i++) {
+                distances.push(calculateEditDistance(solution[i-1], solution[i]));
+            }
+
+            return {
+                solution,
+                start,
+                target,
+                wordLengths,
+                distances
+            };
+        }
+
         function showMessage(text, type) {
             messageEl.textContent = text;
             messageEl.className = `message ${type}`;
@@ -1540,7 +1574,45 @@
             saveProgress();
         }
 
-        // Event listeners
+        // ============================================================================
+        // Game State
+        // ============================================================================
+        let selectedDateString = getTodayString();
+        let currentPuzzleIndex = getPuzzleIndexForDate(selectedDateString);
+        let currentPuzzle = derivePuzzle(puzzles[currentPuzzleIndex]);
+        let selectedWordIndex = 1;
+        let userWords = {};
+        let letterTimestamps = {};
+        let availableLetters = [];
+        let gameWon = false;
+
+        // ============================================================================
+        // DOM Element References
+        // ============================================================================
+        const ladderContainerEl = document.getElementById('ladderContainer');
+        const letterBagEl = document.getElementById('letterBag');
+        const messageEl = document.getElementById('message');
+        const showSolutionBtn = document.getElementById('showSolutionBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statsOverlayEl = document.getElementById('statsOverlay');
+        const closeStatsBtn = document.getElementById('closeStats');
+        const statsTitleEl = document.getElementById('statsTitle');
+        const todayPuzzleEl = document.getElementById('todayPuzzle');
+        const totalPlayedEl = document.getElementById('totalPlayed');
+        const totalWinsEl = document.getElementById('totalWins');
+        const winRateEl = document.getElementById('winRate');
+        const currentStreakEl = document.getElementById('currentStreak');
+        const timeUntilNextEl = document.getElementById('timeUntilNext');
+        const completionTimeEl = document.getElementById('completionTime');
+        const datePickerEl = document.getElementById('datePicker');
+        const instructionsOverlayEl = document.getElementById('instructionsOverlay');
+        const closeInstructionsBtn = document.getElementById('closeInstructions');
+        const startPlayingBtn = document.getElementById('startPlaying');
+        const helpBtn = document.getElementById('helpBtn');
+
+        // ============================================================================
+        // Event Listeners
+        // ============================================================================
         showSolutionBtn.addEventListener('click', showSolution);
         resetBtn.addEventListener('click', resetPuzzle);
         closeInstructionsBtn.addEventListener('click', hideInstructions);
@@ -1565,7 +1637,7 @@
         // Date picker: load puzzles for selected date
         if (datePickerEl) {
             // Set constraints on date picker
-            const startDate = '2025-01-01'; // Fixed start date - change this as needed
+            const startDate = '2025-11-01'; // Fixed start date - change this as needed
             const today = getTodayString();
             
             datePickerEl.min = startDate; // Disable dates before this
@@ -1575,7 +1647,8 @@
             datePickerEl.value = selectedDateString;
             datePickerEl.addEventListener('change', (e) => {
                 selectedDateString = e.target.value || getTodayString();
-                currentPuzzle = puzzles[getPuzzleIndexForDate(selectedDateString)];
+                currentPuzzleIndex = getPuzzleIndexForDate(selectedDateString);
+                currentPuzzle = derivePuzzle(puzzles[currentPuzzleIndex]);
                 selectedWordIndex = 1;
                 userWords = {};
                 letterTimestamps = {};
