@@ -809,6 +809,65 @@
     </div>
 
     <script>
+        // ============================================================================
+        // Dictionary Loading and Validation
+        // ============================================================================
+        let dictionary = new Set();
+        let dictionaryLoaded = false;
+
+        /**
+         * Load the word dictionary from file
+         * Converts to Set for O(1) lookup time
+         * Requires serving via HTTP server (not file://)
+         */
+        async function loadDictionary() {
+            try {
+                const response = await fetch('words_alpha_filt.txt', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/plain'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const text = await response.text();
+                
+                if (!text) {
+                    throw new Error('Dictionary file is empty');
+                }
+                
+                // Split by newline and convert to uppercase Set
+                const words = text.trim().split('\n')
+                    .map(w => w.toUpperCase().trim())
+                    .filter(w => w.length > 0); // Remove empty lines
+                    
+                dictionary = new Set(words);
+                dictionaryLoaded = true;
+                
+                console.log(`✓ Dictionary loaded: ${dictionary.size} words`);
+                return dictionary.size;
+            } catch (error) {
+                console.warn('⚠ Dictionary not loaded. Make sure you\'re running via HTTP server (not file://)');
+                console.warn('To run the server: node server.js then open http://localhost:3000');
+                console.error('Error details:', error.message);
+                dictionaryLoaded = false;
+                return 0;
+            }
+        }
+
+        /**
+         * Check if a word is in the dictionary
+         * Returns true if word is valid, false otherwise
+         */
+        function isValidWord(word) {
+            if (!word || word.length === 0) return false;
+            if (!dictionaryLoaded) return true; // If dictionary not loaded, don't enforce validation
+            return dictionary.has(word.toUpperCase());
+        }
+
         const puzzles = [
             ['START', 'STARTS', 'STANDS', 'HANDS', 'AIDS', 'WINS'],
             ['STRONGER', 'STROLLER', 'ROLLER', 'ROLL', 'RELY', 'REELS'],
@@ -879,6 +938,7 @@
 
         // Initialize game
         function init() {
+            loadDictionary();
             updateDailyDate();
             loadProgress();
             generateAvailableLetters();
@@ -1426,9 +1486,33 @@
                     gameWon = true;
                     showVictory();
                     saveProgress();
+                } else {
+                    // Check which validation failed for better error message
+                    const firstInvalidWord = findFirstInvalidWord();
+                    if (firstInvalidWord) {
+                        const word = userWords[firstInvalidWord];
+                        if (!isValidWord(word)) {
+                            showMessage(`"${word}" is not in the dictionary`, 'error');
+                        } else {
+                            showMessage('Word ladder is not valid. Check the edit distances.', 'error');
+                        }
+                    }
                 }
-                // If invalid, just don't show victory - visual indicators show the problem
             }, 300); // Small delay for better UX
+        }
+
+        /**
+         * Find the first word that is not in the dictionary
+         * Returns the index, or null if all words are valid
+         */
+        function findFirstInvalidWord() {
+            for (let i = 1; i < currentPuzzle.solution.length - 1; i++) {
+                const word = userWords[i];
+                if (word && !isValidWord(word)) {
+                    return i;
+                }
+            }
+            return null;
         }
 
         function validateEntireLadder() {
