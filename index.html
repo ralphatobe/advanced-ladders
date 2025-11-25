@@ -1398,7 +1398,62 @@
                 if (instanceNumber <= timesUsed) {
                     tile.classList.add('used');
                 }
-                
+
+                // Only attach click handler to tiles that are not used
+                if (!tile.classList.contains('used')) {
+                    // Make tile focusable/accessible
+                    tile.setAttribute('role', 'button');
+                    tile.tabIndex = 0;
+
+                    tile.addEventListener('click', (ev) => {
+                        if (gameWon) return;
+                        // Ensure a valid editable slot is selected
+                        if (!selectedWordIndex || selectedWordIndex === 0 || selectedWordIndex === currentPuzzle.solution.length - 1) return;
+
+                        const currentWord = userWords[selectedWordIndex] || '';
+                        const wordLength = currentPuzzle.wordLengths[selectedWordIndex];
+
+                        // Don't allow adding beyond the expected length
+                        if (currentWord.length >= wordLength) return;
+
+                        // Recompute availability for this specific instance to be safe
+                        const timesUsedLocal = usedLetterCounts[letter] || 0;
+                        const instanceNumberLocal = availableLetters.slice(0, index + 1).filter(l => l === letter).length;
+                        if (instanceNumberLocal <= timesUsedLocal) return;
+
+                        // Add the letter to the selected word
+                        userWords[selectedWordIndex] = currentWord + letter;
+
+                        // Track timestamp for this letter
+                        if (!letterTimestamps[selectedWordIndex]) {
+                            letterTimestamps[selectedWordIndex] = {};
+                        }
+                        letterTimestamps[selectedWordIndex][currentWord.length] = Date.now();
+
+                        // If word is now complete, validate and auto-advance
+                        if (userWords[selectedWordIndex].length === wordLength) {
+                            validateSingleWord(selectedWordIndex);
+                            const nextIndex = selectedWordIndex + 1;
+                            if (nextIndex < currentPuzzle.solution.length - 1) {
+                                selectedWordIndex = nextIndex;
+                            }
+                            checkIfPuzzleComplete();
+                        }
+
+                        updateDisplay();
+                        validateCurrentWord();
+                        saveProgress();
+                    });
+
+                    // Allow keyboard activation (Enter/Space)
+                    tile.addEventListener('keydown', (ev) => {
+                        if (ev.key === 'Enter' || ev.key === ' ') {
+                            ev.preventDefault();
+                            tile.click();
+                        }
+                    });
+                }
+
                 letterBagEl.appendChild(tile);
             });
         }
