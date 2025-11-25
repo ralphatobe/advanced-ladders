@@ -303,12 +303,19 @@
         }
 
         .message {
-            margin: 15px 0;
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3000;
+            width: min(600px, calc(100% - 40px));
+            margin: 0;
             padding: 12px;
             border-radius: 8px;
             text-align: center;
             font-weight: 500;
             display: none;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.18);
         }
 
         .message.error {
@@ -1303,6 +1310,10 @@
                             className += ' invalid-letter';
                         }
                     }
+                    // If the entire word is marked invalid (not in dictionary), show incorrect class
+                    if (invalidWords[index]) {
+                        className += ' incorrect';
+                    }
                     if (isSelected && i === word.length) {
                         className += ' cursor';
                     }
@@ -1435,6 +1446,9 @@
                 
                 // Check if word is now complete
                 if (userWords[selectedWordIndex].length === wordLength) {
+                    // Validate this completed word against the dictionary
+                    validateSingleWord(selectedWordIndex);
+
                     // Auto-advance to next word
                     const nextIndex = selectedWordIndex + 1;
                     if (nextIndex < currentPuzzle.solution.length - 1) {
@@ -1467,7 +1481,41 @@
         }
 
         function validateCurrentWord() {
-            // Silent validation - visual indicators show the errors
+            // Validate the currently selected word (if any)
+            if (selectedWordIndex && selectedWordIndex > 0 && selectedWordIndex < currentPuzzle.solution.length - 1) {
+                validateSingleWord(selectedWordIndex);
+            }
+        }
+
+        // Validate a single completed word (by index) against the dictionary.
+        // If invalid, mark it in `invalidWords` and show a message.
+        function validateSingleWord(index) {
+            if (!index) return;
+            const expectedLength = currentPuzzle.wordLengths[index];
+            const word = (userWords[index] || '').trim();
+
+            // Only validate fully-entered words
+            if (!word || word.length !== expectedLength) {
+                // If word is incomplete, clear any invalid marking for that slot
+                if (invalidWords[index]) {
+                    delete invalidWords[index];
+                    updateDisplay();
+                }
+                return;
+            }
+
+            // If dictionary loaded, enforce it
+            if (!isValidWord(word)) {
+                invalidWords[index] = true;
+                updateDisplay();
+                showMessage('Not in word list', 'error');
+            } else {
+                // valid word: clear any invalid flag
+                if (invalidWords[index]) {
+                    delete invalidWords[index];
+                    updateDisplay();
+                }
+            }
         }
 
         function checkIfPuzzleComplete() {
@@ -1668,7 +1716,10 @@
         let userWords = {};
         let letterTimestamps = {};
         let availableLetters = [];
+        // Track words that failed dictionary validation (index -> true)
+        let invalidWords = {};
         let gameWon = false;
+        let puzzleStartTime = Date.now();
 
         // ============================================================================
         // DOM Element References
@@ -1720,12 +1771,11 @@
 
         // Date picker: load puzzles for selected date
         if (datePickerEl) {
-            // Set constraints on date picker
-            const startDate = '2025-11-01'; // Fixed start date - change this as needed
+            const startDate = '2025-11-01';
             const today = getTodayString();
             
-            datePickerEl.min = startDate; // Disable dates before this
-            datePickerEl.max = today;    // Disable future dates
+            datePickerEl.min = startDate;
+            datePickerEl.max = today;
             
             // initialize picker value
             datePickerEl.value = selectedDateString;
