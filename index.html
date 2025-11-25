@@ -260,6 +260,34 @@
             pointer-events: none;
         }
 
+        .backspace-btn {
+            width: 30px;
+            height: 35px;
+            background: #ef4444;
+            border: 2px solid #dc2626;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .backspace-btn:hover {
+            background: #dc2626;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .backspace-btn:active {
+            transform: translateY(-1px);
+        }
+
         .button-group {
             display: flex;
             gap: 10px;
@@ -1370,6 +1398,56 @@
         function updateLetterBag() {
             letterBagEl.innerHTML = '';
             
+            // Detect if user is on mobile
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            // Add backspace button at the start on mobile
+            if (isMobile) {
+                const backspaceBtn = document.createElement('div');
+                backspaceBtn.className = 'backspace-btn';
+                backspaceBtn.textContent = '\u232b';
+                backspaceBtn.setAttribute('role', 'button');
+                backspaceBtn.tabIndex = 0;
+                backspaceBtn.title = 'Delete last letter';
+                
+                backspaceBtn.addEventListener('click', () => {
+                    if (gameWon) return;
+                    if (!selectedWordIndex || selectedWordIndex === 0 || selectedWordIndex === currentPuzzle.solution.length - 1) return;
+                    
+                    const currentWord = userWords[selectedWordIndex] || '';
+                    if (currentWord.length > 0) {
+                        // Delete from current word
+                        userWords[selectedWordIndex] = currentWord.slice(0, -1);
+                        if (letterTimestamps[selectedWordIndex]) {
+                            delete letterTimestamps[selectedWordIndex][currentWord.length - 1];
+                        }
+                    } else if (selectedWordIndex > 1) {
+                        // At start of current word, delete from previous word
+                        const prevIndex = selectedWordIndex - 1;
+                        const prevWord = userWords[prevIndex] || '';
+                        if (prevWord.length > 0) {
+                            userWords[prevIndex] = prevWord.slice(0, -1);
+                            if (letterTimestamps[prevIndex]) {
+                                delete letterTimestamps[prevIndex][prevWord.length - 1];
+                            }
+                            selectedWordIndex = prevIndex;
+                        }
+                    }
+                    updateDisplay();
+                    validateCurrentWord();
+                    saveProgress();
+                });
+                
+                backspaceBtn.addEventListener('keydown', (ev) => {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                        ev.preventDefault();
+                        backspaceBtn.click();
+                    }
+                });
+                
+                letterBagEl.appendChild(backspaceBtn);
+            }
+            
             // Count how many of each letter are used
             const usedLetterCounts = {};
             Object.values(userWords).forEach(word => {
@@ -1461,6 +1539,10 @@
         function handleKeyPress(e) {
             if (gameWon) return;
             
+            // Skip keyboard input on mobile
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) return;
+            
             const key = e.key.toUpperCase();
             
             // Handle backspace
@@ -1468,15 +1550,27 @@
                 e.preventDefault();
                 const currentWord = userWords[selectedWordIndex] || '';
                 if (currentWord.length > 0) {
+                    // Delete from current word
                     userWords[selectedWordIndex] = currentWord.slice(0, -1);
                     // Remove timestamp for the deleted letter
                     if (letterTimestamps[selectedWordIndex]) {
                         delete letterTimestamps[selectedWordIndex][currentWord.length - 1];
                     }
-                    updateDisplay();
-                    validateCurrentWord();
-                    saveProgress();
+                } else if (selectedWordIndex > 1) {
+                    // At start of current word, delete from previous word
+                    const prevIndex = selectedWordIndex - 1;
+                    const prevWord = userWords[prevIndex] || '';
+                    if (prevWord.length > 0) {
+                        userWords[prevIndex] = prevWord.slice(0, -1);
+                        if (letterTimestamps[prevIndex]) {
+                            delete letterTimestamps[prevIndex][prevWord.length - 1];
+                        }
+                        selectedWordIndex = prevIndex;
+                    }
                 }
+                updateDisplay();
+                validateCurrentWord();
+                saveProgress();
                 return;
             }
             
