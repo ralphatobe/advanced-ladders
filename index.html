@@ -54,10 +54,19 @@
 
         .ladder-container {
             margin: 25px 0;
-            position: relative;
             display: flex;
             flex-direction: column;
             gap: 8px;
+        }
+
+        .indicators-container {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            margin-left: 0px;
+            width: 40px;
+            bottom: 0;
+            pointer-events: none;
         }
 
         .ladder-step {
@@ -145,6 +154,8 @@
             height: 100%;
             display: block;
             margin-left: -2px;
+            filter: brightness(0) saturate(100%) invert(74%) sepia(5%) saturate(693%) hue-rotate(179deg) brightness(88%) contrast(88%);
+            /* This specific filter creates the purple #77216f color */
         }
 
         .word-slot {
@@ -247,6 +258,7 @@
             }
             .container {
                 padding-bottom: calc(var(--letter-bag-height) + 28px);
+                padding-right: 65px;
             }
         }
 
@@ -767,7 +779,10 @@
             </div>
         </div>
 
-        <div class="ladder-container" id="ladderContainer"></div>
+        <div style="position: relative;">
+            <div class="ladder-container" id="ladderContainer"></div>
+            <div class="indicators-container" id="indicatorsContainer"></div>
+        </div>
 
         <div class="letter-bag" id="letterBag"></div>
 
@@ -1209,6 +1224,7 @@
         function updateDisplay() {
             // Build ladder
             ladderContainerEl.innerHTML = '';
+            indicatorsContainerEl.innerHTML = '';
             
             // Array to track step elements for positioning indicators
             const stepElements = [];
@@ -1267,10 +1283,10 @@
             // Calculate vertical position (midpoint between the two words)
             const prevRect = prevStepEl.getBoundingClientRect();
             const currentRect = currentStepEl.getBoundingClientRect();
-            const containerRect = ladderContainerEl.getBoundingClientRect();
+            const ladderRect = ladderContainerEl.getBoundingClientRect();
             
-            const prevBottom = prevRect.bottom - containerRect.top;
-            const currentTop = currentRect.top - containerRect.top;
+            const prevBottom = prevRect.bottom - ladderRect.top;
+            const currentTop = currentRect.top - ladderRect.top;
             const midpoint = (prevBottom + currentTop) / 2;
             
             distanceRow.style.top = `${midpoint}px`;
@@ -1295,7 +1311,7 @@
             }
             
             distanceRow.innerHTML = indicatorHTML;
-            ladderContainerEl.appendChild(distanceRow);
+            indicatorsContainerEl.appendChild(distanceRow);
         }
 
         function addLadderStep(index, word, isFixed, isSelected) {
@@ -1868,6 +1884,7 @@
         // DOM Element References
         // ============================================================================
         const ladderContainerEl = document.getElementById('ladderContainer');
+        const indicatorsContainerEl = document.getElementById('indicatorsContainer');
         const letterBagEl = document.getElementById('letterBag');
         const messageEl = document.getElementById('message');
         const showSolutionBtn = document.getElementById('showSolutionBtn');
