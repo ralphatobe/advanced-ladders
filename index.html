@@ -54,6 +54,10 @@
 
         .ladder-container {
             margin: 25px 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .ladder-step {
@@ -82,16 +86,20 @@
         }
 
         .edit-distance-row {
+            position: absolute;
+            right: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 6px 0;
-            margin: 0;
+            z-index: 10;
         }
 
         .edit-distance-indicator {
             font-size: 0.9em;
-            padding: 2px 6px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            padding-left: 6px;
+            padding-right: 4px;
             border-radius: 6px;
             font-weight: bold;
             min-width: 10px;
@@ -117,14 +125,26 @@
             color: #9ca3af;
         }
 
+        .edit-distance-indicator > span:not(.distance-arrow) {
+            margin-left: 4px;
+        }
+
         .distance-crossed {
             text-decoration: line-through;
             opacity: 0.5;
         }
 
         .distance-arrow {
-            font-size: 0.8em;
-            opacity: 0.7;
+            width: 16px;
+            height: 16px;
+            display: block;
+        }
+        
+        .distance-arrow img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            margin-left: -2px;
         }
 
         .word-slot {
@@ -821,9 +841,9 @@
                         <div style="display: flex; align-items: center; gap: 4px;">
                             <div class="rule-text">Word pairs are</div>
                             <div class="edit-distance-indicator empty" style="min-width: 0px;">
-                                <span class="distance-arrow">▲</span>
+                                <span class="distance-arrow"><img src="arrow_top_left.svg" alt="↖" style="width: 16px; height: 16px;"></span>
                                 <span class="distance">N</span>
-                                <span class="distance-arrow">▼</span>
+                                <span class="distance-arrow"><img src="arrow_bottom_left.svg" alt="↙" style="width: 16px; height: 16px;"></span>
                             </div>
                             <div class="rule-text">edits apart</div>
                         </div>
@@ -1190,24 +1210,26 @@
             // Build ladder
             ladderContainerEl.innerHTML = '';
             
-            // Start word
-            addLadderStep(0, currentPuzzle.start, true, false);
+            // Array to track step elements for positioning indicators
+            const stepElements = [];
             
-            // Intermediate words with edit distance indicators between them
+            // Start word
+            stepElements.push(addLadderStep(0, currentPuzzle.start, true, false));
+            
+            // Intermediate words
             for (let i = 1; i < currentPuzzle.solution.length - 1; i++) {
-                // Add edit distance indicator before this word
-                addEditDistanceIndicator(i);
-                
                 const word = userWords[i] || '';
                 const isSelected = i === selectedWordIndex;
-                addLadderStep(i, word, false, isSelected);
+                stepElements.push(addLadderStep(i, word, false, isSelected));
             }
             
-            // Edit distance indicator before target word
-            addEditDistanceIndicator(currentPuzzle.solution.length - 1);
-            
             // Target word
-            addLadderStep(currentPuzzle.solution.length - 1, currentPuzzle.target, true, false);
+            stepElements.push(addLadderStep(currentPuzzle.solution.length - 1, currentPuzzle.target, true, false));
+
+            // Now add edit distance indicators positioned on the right
+            for (let i = 1; i < currentPuzzle.solution.length; i++) {
+                addEditDistanceIndicator(i, stepElements[i-1], stepElements[i]);
+            }
 
             // Update letter bag
             updateLetterBag();
@@ -1217,7 +1239,7 @@
             }
         }
 
-        function addEditDistanceIndicator(currentIndex) {
+        function addEditDistanceIndicator(currentIndex, prevStepEl, currentStepEl) {
             const prevIndex = currentIndex - 1;
             const targetDistance = currentPuzzle.distances[prevIndex];
             
@@ -1242,21 +1264,33 @@
             const distanceRow = document.createElement('div');
             distanceRow.className = 'edit-distance-row';
             
+            // Calculate vertical position (midpoint between the two words)
+            const prevRect = prevStepEl.getBoundingClientRect();
+            const currentRect = currentStepEl.getBoundingClientRect();
+            const containerRect = ladderContainerEl.getBoundingClientRect();
+            
+            const prevBottom = prevRect.bottom - containerRect.top;
+            const currentTop = currentRect.top - containerRect.top;
+            const midpoint = (prevBottom + currentTop) / 2;
+            
+            distanceRow.style.top = `${midpoint}px`;
+            distanceRow.style.transform = 'translateY(-50%)';
+            
             let indicatorHTML;
             if (prevWord && currentWord && prevComplete && currentComplete) {
                 const editDist = calculateEditDistance(prevWord, currentWord);
                 const isValid = editDist === targetDistance;
                 const className = isValid ? 'valid' : 'invalid';
                 indicatorHTML = `<div class="edit-distance-indicator ${className}">
-                    <span class="distance-arrow">▲</span>
+                    <span class="distance-arrow"><img src="arrow_top_left.svg" alt="↖"></span>
                     <span>${targetDistance}</span>
-                    <span class="distance-arrow">▼</span>
+                    <span class="distance-arrow"><img src="arrow_bottom_left.svg" alt="↙"></span>
                 </div>`;
             } else {
                 indicatorHTML = `<div class="edit-distance-indicator empty">
-                    <span class="distance-arrow">▲</span>
+                    <span class="distance-arrow"><img src="arrow_top_left.svg" alt="↖"></span>
                     <span>${targetDistance}</span>
-                    <span class="distance-arrow">▼</span>
+                    <span class="distance-arrow"><img src="arrow_bottom_left.svg" alt="↙"></span>
                 </div>`;
             }
             
@@ -1314,6 +1348,8 @@
             stepDiv.innerHTML = `<div class="${selectedClass}">${wordSlotHTML}</div>`;
             
             ladderContainerEl.appendChild(stepDiv);
+            
+            return stepDiv;  // Return the element for positioning calculations
         }
 
         function isLetterValidInWord(word, position, wordIndex) {
