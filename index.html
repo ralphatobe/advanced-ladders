@@ -840,6 +840,169 @@
             font-size: 0.9em;
             color: #92400e;
         }
+
+        /* Tutorial Styles */
+        .tutorial-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        .tutorial-overlay.active {
+            display: block;
+        }
+
+        .tutorial-spotlight {
+            position: fixed;
+            border: 3px solid #77216f;
+            border-radius: 8px;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            z-index: 1999;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            animation: pulse 2s ease infinite;
+            display: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5), 0 0 20px rgba(119, 33, 111, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5), 0 0 30px rgba(119, 33, 111, 0.8);
+            }
+        }
+
+        .tutorial-tooltip {
+            position: fixed;
+            background: white;
+            border-radius: 12px;
+            padding: 20px 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 320px;
+            z-index: 2001;
+            pointer-events: auto;
+            animation: tooltipFadeIn 0.3s ease;
+        }
+
+        .tutorial-tooltip::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+
+        .tutorial-tooltip.arrow-left::after {
+            right: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 10px 10px 10px 0;
+            border-color: transparent white transparent transparent;
+        }
+
+        .tutorial-tooltip.arrow-right::after {
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 10px 0 10px 10px;
+            border-color: transparent transparent transparent white;
+        }
+
+        .tutorial-tooltip.arrow-top::after {
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 10px 10px 10px;
+            border-color: transparent transparent white transparent;
+        }
+
+        .tutorial-tooltip.arrow-bottom::after {
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0 10px;
+            border-color: white transparent transparent transparent;
+        }
+
+        .tutorial-progress {
+            font-size: 0.85em;
+            color: #999;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .tutorial-tooltip-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #77216f;
+            margin-bottom: 10px;
+        }
+
+        .tutorial-tooltip-text {
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .tutorial-next-btn {
+            width: 100%;
+            padding: 12px;
+            background: #77216f;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1em;
+        }
+
+        .tutorial-next-btn:hover:not(:disabled) {
+            background: #67115f;
+            transform: translateY(-2px);
+        }
+
+        .tutorial-next-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d !important;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268 !important;
+        }
+
+        @keyframes tooltipFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .tutorial-tooltip {
+                max-width: 280px;
+                padding: 15px 20px;
+            }
+
+            .tutorial-tooltip-title {
+                font-size: 1.1em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -954,6 +1117,39 @@
                 <button class="start-btn" id="startPlaying">Start Playing</button>
             </div>
         </div>
+
+        <!-- Tutorial Overlay System -->
+        <div class="tutorial-overlay" id="tutorialOverlay">
+            <div class="tutorial-spotlight" id="tutorialSpotlight"></div>
+        </div>
+
+        <!-- Tutorial Tooltip -->
+        <div class="tutorial-tooltip" id="tutorialTooltip" style="display: none;">
+            <div class="tutorial-progress" id="tutorialProgress">Step 1 of 6</div>
+            <h3 class="tutorial-tooltip-title" id="tutorialTitle"></h3>
+            <p class="tutorial-tooltip-text" id="tutorialText"></p>
+            <button class="tutorial-next-btn" id="tutorialNextBtn">Next</button>
+        </div>
+
+        <!-- Tutorial Prompt (first-time) -->
+        <div class="instructions-overlay" id="tutorialPromptOverlay">
+            <div class="instructions-popup">
+                <h2>Welcome to Advanced Ladders!</h2>
+                <p class="goal">Would you like a quick tutorial to learn how to play?</p>
+                <button class="start-btn" id="startTutorialBtn">Play Tutorial</button>
+                <button class="start-btn btn-secondary" id="skipTutorialBtn">Skip to Game</button>
+            </div>
+        </div>
+
+        <!-- Help Menu Modal -->
+        <div class="instructions-overlay" id="helpMenuOverlay">
+            <div class="instructions-popup">
+                <button class="close-btn" id="closeHelpMenu">✕</button>
+                <h2>Help & Instructions</h2>
+                <button class="start-btn" id="viewInstructionsBtn">View Instructions</button>
+                <button class="start-btn" id="playTutorialBtn" style="margin-top: 10px;">Play Tutorial</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1015,6 +1211,22 @@
             if (!dictionaryLoaded) return true; // If dictionary not loaded, don't enforce validation
             return dictionary.has(word.toUpperCase());
         }
+
+        // ============================================================================
+        // Tutorial System Constants
+        // ============================================================================
+        const TUTORIAL_PUZZLE = ['CAT', 'CART', 'CARE', 'BAR', 'BARN'];
+
+        const TUTORIAL_STEPS = {
+            WELCOME: 0,
+            CLICK_WORD: 1,
+            TYPE_LETTER: 2,
+            COMPLETE_WORD: 3,
+            EDIT_DISTANCE: 4,
+            DISTANCE_TWO: 5,
+            FINAL_WORD: 6,
+            COMPLETE: 7
+        };
 
         const puzzles = [
             ['START', 'STARTS', 'STANDS', 'HANDS', 'AIDS', 'WINS'],
@@ -1099,7 +1311,7 @@
         function checkFirstVisit() {
             const hasVisited = localStorage.getItem('wordLadderVisited');
             if (!hasVisited) {
-                showInstructions();
+                showTutorialPrompt();
                 localStorage.setItem('wordLadderVisited', 'true');
             }
         }
@@ -1137,6 +1349,9 @@
 
         // Update stats after completing or showing solution
         function updateStats(won, usedSolution = false) {
+            // Don't update stats during tutorial mode
+            if (tutorialMode) return loadStats();
+
             const stats = loadStats();
             const today = selectedDateString;
 
@@ -1286,6 +1501,9 @@
 
         // Save progress to localStorage
         function saveProgress() {
+            // Don't save progress during tutorial mode
+            if (tutorialMode) return;
+
             const saved = localStorage.getItem('wordLadderProgress');
             const data = saved ? JSON.parse(saved) : {};
             const dayKey = `daily-${selectedDateString}`;
@@ -1436,11 +1654,10 @@
             }
             
             wordSlotHTML += '</div>';
-            
-            // Add visual indicator for selected word
+
             const selectedClass = isSelected ? ' selected-step' : '';
             stepDiv.innerHTML = `<div class="${selectedClass}">${wordSlotHTML}</div>`;
-            
+
             ladderContainerEl.appendChild(stepDiv);
             
             return stepDiv;  // Return the element for positioning calculations
@@ -1481,6 +1698,11 @@
             if (gameWon || index === 0 || index === currentPuzzle.solution.length - 1) return;
             selectedWordIndex = index;
             updateDisplay();
+
+            // Tutorial: check if user clicked the correct word slot
+            if (tutorialMode && tutorialStep === TUTORIAL_STEPS.CLICK_WORD && index === 1) {
+                advanceTutorialStep();
+            }
         }
 
         function updateLetterBag() {
@@ -1579,53 +1801,66 @@
                     } else {
                         // Regular letter key
                         keyEl.textContent = key;
-                        
+
                         const inBag = letterCounts[key] !== undefined;
                         const remaining = remainingCounts[key] || 0;
-                        
-                        if (!inBag) {
-                            // Letter not in bag at all - grey out
-                            keyEl.classList.add('unavailable');
-                        } else if (remaining === 0) {
-                            // Was in bag but all used - show as depleted
-                            keyEl.classList.add('depleted');
-                            
-                            // Add badge showing 0
-                            const badge = document.createElement('div');
-                            badge.className = 'key-badge zero';
-                            badge.textContent = '0';
-                            keyEl.appendChild(badge);
-                        } else {
-                            // Available to use
-                            keyEl.classList.add('available');
-                            
-                            // Add badge showing count
-                            const badge = document.createElement('div');
-                            badge.className = 'key-badge';
-                            badge.textContent = remaining.toString();
-                            keyEl.appendChild(badge);
-                            
+
+                            if (!inBag) {
+                                // Letter not in bag at all - grey out
+                                keyEl.classList.add('unavailable');
+                            } else if (remaining === 0) {
+                                // Was in bag but all used - show as depleted
+                                keyEl.classList.add('depleted');
+
+                                // Add badge showing 0
+                                const badge = document.createElement('div');
+                                badge.className = 'key-badge zero';
+                                badge.textContent = '0';
+                                keyEl.appendChild(badge);
+                            } else {
+                                // Available to use
+                                keyEl.classList.add('available');
+
+                                // Add badge showing count
+                                const badge = document.createElement('div');
+                                badge.className = 'key-badge';
+                                badge.textContent = remaining.toString();
+                                keyEl.appendChild(badge);
+                                
                             // Add click handler
                             keyEl.addEventListener('click', () => {
                                 if (gameWon) return;
                                 if (!selectedWordIndex || selectedWordIndex === 0 || selectedWordIndex === currentPuzzle.solution.length - 1) return;
-                                
+
                                 const currentWord = userWords[selectedWordIndex] || '';
                                 const wordLength = currentPuzzle.wordLengths[selectedWordIndex];
-                                
+
                                 if (currentWord.length >= wordLength) return;
-                                
+
                                 // Check if letter is still available
                                 const used = usedLetterCounts[key] || 0;
                                 if (used >= letterCounts[key]) return;
-                                
+
                                 userWords[selectedWordIndex] = currentWord + key;
-                                
+
                                 if (!letterTimestamps[selectedWordIndex]) {
                                     letterTimestamps[selectedWordIndex] = {};
                                 }
                                 letterTimestamps[selectedWordIndex][currentWord.length] = Date.now();
-                                
+
+                                // Tutorial: check for progress
+                                if (tutorialMode) {
+                                    if (tutorialStep === TUTORIAL_STEPS.TYPE_LETTER && key === 'C' && currentWord.length === 0) {
+                                        advanceTutorialStep();
+                                    } else if (tutorialStep === TUTORIAL_STEPS.COMPLETE_WORD && userWords[selectedWordIndex] === 'CART') {
+                                        advanceTutorialStep();
+                                    } else if (tutorialStep === TUTORIAL_STEPS.DISTANCE_TWO && userWords[selectedWordIndex] === 'BAR') {
+                                        advanceTutorialStep();
+                                    } else if (tutorialStep === TUTORIAL_STEPS.FINAL_WORD && userWords[selectedWordIndex] === 'CARE') {
+                                        advanceTutorialStep();
+                                    }
+                                }
+
                                 if (userWords[selectedWordIndex].length === wordLength) {
                                     validateSingleWord(selectedWordIndex);
                                     const nextIndex = selectedWordIndex + 1;
@@ -1634,12 +1869,12 @@
                                     }
                                     checkIfPuzzleComplete();
                                 }
-                                
+
                                 updateDisplay();
                                 validateCurrentWord();
                                 saveProgress();
                             });
-                        }
+                    }
                     }
                     
                     rowDiv.appendChild(keyEl);
@@ -1699,31 +1934,48 @@
                 
                 // Add the letter even if not available (will be shown in red)
                 userWords[selectedWordIndex] = currentWord + key;
-                
+
                 // Track timestamp for this letter
                 if (!letterTimestamps[selectedWordIndex]) {
                     letterTimestamps[selectedWordIndex] = {};
                 }
                 letterTimestamps[selectedWordIndex][currentWord.length] = Date.now();
-                
+
+                // Tutorial: check for progress
+                if (tutorialMode) {
+                    if (tutorialStep === TUTORIAL_STEPS.TYPE_LETTER && key === 'C' && currentWord.length === 0) {
+                        advanceTutorialStep();
+                    } else if (tutorialStep === TUTORIAL_STEPS.COMPLETE_WORD && userWords[selectedWordIndex] === 'CART') {
+                        advanceTutorialStep();
+                    } else if (tutorialStep === TUTORIAL_STEPS.DISTANCE_TWO && userWords[selectedWordIndex] === 'BAR') {
+                        advanceTutorialStep();
+                    } else if (tutorialStep === TUTORIAL_STEPS.FINAL_WORD && userWords[selectedWordIndex] === 'CARE') {
+                        advanceTutorialStep();
+                    }
+                }
+
                 // Check if word is now complete
                 if (userWords[selectedWordIndex].length === wordLength) {
                     // Validate this completed word against the dictionary
                     validateSingleWord(selectedWordIndex);
 
-                    // Auto-advance to next word
-                    const nextIndex = selectedWordIndex + 1;
-                    if (nextIndex < currentPuzzle.solution.length - 1) {
-                        selectedWordIndex = nextIndex;
+                    // Auto-advance to next word (unless in tutorial)
+                    if (!tutorialMode) {
+                        const nextIndex = selectedWordIndex + 1;
+                        if (nextIndex < currentPuzzle.solution.length - 1) {
+                            selectedWordIndex = nextIndex;
+                        }
                     }
-                    
+
                     // Check if entire puzzle is complete
                     checkIfPuzzleComplete();
                 }
-                
+
                 updateDisplay();
                 validateCurrentWord();
-                saveProgress();
+                if (!tutorialMode) {
+                    saveProgress();
+                }
             }
         }
 
@@ -1788,14 +2040,20 @@
                     return; // Not complete yet
                 }
             }
-            
+
             // All words filled, now validate the entire solution
             setTimeout(() => {
                 const isValid = validateEntireLadder();
                 if (isValid) {
                     gameWon = true;
-                    showVictory();
-                    saveProgress();
+
+                    // In tutorial mode, advance to completion step instead of showing victory
+                    if (tutorialMode) {
+                        advanceTutorialStep();
+                    } else {
+                        showVictory();
+                        saveProgress();
+                    }
                 } else {
                     // Check which validation failed for better error message
                     const firstInvalidWord = findFirstInvalidWord();
@@ -1969,6 +2227,276 @@
         }
 
         // ============================================================================
+        // Tutorial System Functions
+        // ============================================================================
+
+        function startTutorial() {
+            savedDailyState = {
+                puzzle: currentPuzzle,
+                date: selectedDateString,
+                index: currentPuzzleIndex,
+                userWords: {...userWords},
+                letterTimestamps: {...letterTimestamps},
+                selectedWordIndex: selectedWordIndex,
+                gameWon: gameWon,
+                invalidWords: {...invalidWords}
+            };
+
+            tutorialMode = true;
+            tutorialStep = TUTORIAL_STEPS.WELCOME;
+            tutorialPuzzle = derivePuzzle(TUTORIAL_PUZZLE);
+            currentPuzzle = tutorialPuzzle;
+            selectedWordIndex = 1;
+            userWords = {};
+            letterTimestamps = {};
+            invalidWords = {};
+            gameWon = false;
+
+            generateAvailableLetters();
+            hideInstructions();
+            hideTutorialPrompt();
+            hideHelpMenu();
+            updateDisplay();
+            advanceTutorialStep();
+        }
+
+        function exitTutorial() {
+            if (!savedDailyState) return;
+
+            currentPuzzle = savedDailyState.puzzle;
+            selectedDateString = savedDailyState.date;
+            currentPuzzleIndex = savedDailyState.index;
+            userWords = savedDailyState.userWords;
+            letterTimestamps = savedDailyState.letterTimestamps;
+            selectedWordIndex = savedDailyState.selectedWordIndex;
+            gameWon = savedDailyState.gameWon;
+            invalidWords = savedDailyState.invalidWords;
+
+            tutorialMode = false;
+            tutorialStep = 0;
+            tutorialPuzzle = null;
+            savedDailyState = null;
+
+            hideTutorialOverlay();
+            hideTutorialTooltip();
+            generateAvailableLetters();
+            updateDisplay();
+        }
+
+        function advanceTutorialStep() {
+            tutorialStep++;
+            switch(tutorialStep) {
+                case TUTORIAL_STEPS.CLICK_WORD: handleTutorialStep1(); break;
+                case TUTORIAL_STEPS.TYPE_LETTER: handleTutorialStep2(); break;
+                case TUTORIAL_STEPS.COMPLETE_WORD: handleTutorialStep3(); break;
+                case TUTORIAL_STEPS.EDIT_DISTANCE: handleTutorialStep4(); break;
+                case TUTORIAL_STEPS.DISTANCE_TWO: handleTutorialStep5(); break;
+                case TUTORIAL_STEPS.FINAL_WORD: handleTutorialStep6(); break;
+                case TUTORIAL_STEPS.COMPLETE: handleTutorialStep7(); break;
+            }
+        }
+
+        function showTutorialTooltip(title, text, buttonEnabled, stepNum, totalSteps) {
+            tutorialTitleEl.textContent = title;
+            tutorialTextEl.textContent = text;
+            tutorialNextBtn.disabled = !buttonEnabled;
+            if (stepNum) tutorialProgressEl.textContent = `Step ${stepNum} of ${totalSteps}`;
+            tutorialTooltipEl.style.display = 'block';
+        }
+
+        function hideTutorialTooltip() {
+            tutorialTooltipEl.style.display = 'none';
+        }
+
+        function positionTooltip(targetElement, arrowDirection = 'left') {
+            if (!targetElement) return;
+            const rect = targetElement.getBoundingClientRect();
+            const tooltip = tutorialTooltipEl;
+
+            tooltip.classList.remove('arrow-left', 'arrow-right', 'arrow-top', 'arrow-bottom');
+            tooltip.classList.add(`arrow-${arrowDirection}`);
+
+            if (arrowDirection === 'left') {
+                tooltip.style.left = (rect.right + 20) + 'px';
+                tooltip.style.top = (rect.top + rect.height / 2 - 80) + 'px';
+            } else if (arrowDirection === 'right') {
+                tooltip.style.left = (rect.left - tooltip.offsetWidth - 20) + 'px';
+                tooltip.style.top = (rect.top + rect.height / 2 - 80) + 'px';
+            } else if (arrowDirection === 'top') {
+                tooltip.style.left = (rect.left + rect.width / 2 - tooltip.offsetWidth / 2) + 'px';
+                tooltip.style.top = (rect.bottom + 20) + 'px';
+            } else if (arrowDirection === 'bottom') {
+                tooltip.style.left = (rect.left + rect.width / 2 - tooltip.offsetWidth / 2) + 'px';
+                tooltip.style.top = (rect.top - tooltip.offsetHeight - 20) + 'px';
+            }
+
+            const tooltipRect = tooltip.getBoundingClientRect();
+            if (tooltipRect.right > window.innerWidth) {
+                tooltip.style.left = (window.innerWidth - tooltipRect.width - 20) + 'px';
+            }
+            if (tooltipRect.left < 0) {
+                tooltip.style.left = '20px';
+            }
+            if (tooltipRect.bottom > window.innerHeight) {
+                tooltip.style.top = (window.innerHeight - tooltipRect.height - 20) + 'px';
+            }
+            if (tooltipRect.top < 0) {
+                tooltip.style.top = '20px';
+            }
+        }
+
+        function createSpotlight(targetElement) {
+            if (!targetElement) return;
+            const rect = targetElement.getBoundingClientRect();
+            tutorialSpotlightEl.style.left = (rect.left - 5) + 'px';
+            tutorialSpotlightEl.style.top = (rect.top - 5) + 'px';
+            tutorialSpotlightEl.style.width = (rect.width + 10) + 'px';
+            tutorialSpotlightEl.style.height = (rect.height + 10) + 'px';
+            tutorialSpotlightEl.style.display = 'block';
+        }
+
+        function removeSpotlight() {
+            tutorialSpotlightEl.style.display = 'none';
+        }
+
+        function showTutorialOverlay() {
+            tutorialOverlayEl.classList.add('active');
+        }
+
+        function hideTutorialOverlay() {
+            tutorialOverlayEl.classList.remove('active');
+            removeSpotlight();
+        }
+
+        function showTutorialPrompt() {
+            tutorialPromptOverlayEl.classList.add('show');
+        }
+
+        function hideTutorialPrompt() {
+            tutorialPromptOverlayEl.classList.remove('show');
+        }
+
+        function showHelpMenu() {
+            helpMenuOverlayEl.classList.add('show');
+        }
+
+        function hideHelpMenu() {
+            helpMenuOverlayEl.classList.remove('show');
+        }
+
+        function handleTutorialStep1() {
+            showTutorialOverlay();
+            setTimeout(() => {
+                const wordSlot = document.querySelector(`.ladder-step[data-index="1"]`);
+                if (wordSlot) {
+                    createSpotlight(wordSlot);
+                    showTutorialTooltip('Select a Word', 'Click the second word to start filling it in. First and last words are always given.', false, 1, 6);
+                    positionTooltip(wordSlot, 'left');
+                }
+            }, 100);
+        }
+
+        function handleTutorialStep2() {
+            const letterBag = document.getElementById('letterBag');
+            if (letterBag) {
+                createSpotlight(letterBag);
+                showTutorialTooltip('Use Available Letters', "Type 'C' or click it below. All needed letters are shown here.", false, 2, 6);
+                positionTooltip(letterBag, 'bottom');
+            }
+        }
+
+        function handleTutorialStep3() {
+            const letterBag = document.getElementById('letterBag');
+            if (letterBag) {
+                createSpotlight(letterBag);
+                showTutorialTooltip('Finish the Word', 'Complete by typing A-R-T. The cursor moves as you type.', false, 3, 6);
+                positionTooltip(letterBag, 'bottom');
+            }
+        }
+
+        function handleTutorialStep4() {
+            const indicator = document.querySelector('.edit-distance-indicator');
+            if (indicator) {
+                createSpotlight(indicator);
+                showTutorialTooltip('Edit Distance', 'Shows how many changes separate words. CAT→CART needs 1 (insert T). Green = correct!', true, 4, 6);
+                positionTooltip(indicator, 'top');
+            }
+        }
+
+        function handleTutorialStep5() {
+            selectedWordIndex = 3;
+            updateDisplay();
+            const wordSlot = document.querySelector(`.ladder-step[data-index="3"]`);
+            if (wordSlot) {
+                createSpotlight(wordSlot);
+                showTutorialTooltip('Multiple Edits', 'This word needs 2 edits! CARE→BAR requires deleting two letters (C and E). Complete it now.', false, 5, 6);
+                positionTooltip(wordSlot, 'left');
+            }
+        }
+
+        function handleTutorialStep6() {
+            selectedWordIndex = 2;
+            updateDisplay();
+            const wordSlot = document.querySelector(`.ladder-step[data-index="2"]`);
+            if (wordSlot) {
+                createSpotlight(wordSlot);
+                showTutorialTooltip('Any Order', 'You can fill words in any order! Complete CARE now. It bridges CART and BAR.', false, 6, 6);
+                positionTooltip(wordSlot, 'left');
+            }
+        }
+
+        function handleTutorialStep7() {
+            localStorage.setItem('tutorialCompleted', 'true');
+            hideTutorialTooltip();
+            hideTutorialOverlay();
+
+            instructionsOverlayEl.innerHTML = `
+                <div class="instructions-popup">
+                    <h2>🎉 Tutorial Complete!</h2>
+                    <p class="goal">Great job! You've learned Advanced Ladders. Ready for the daily puzzle?</p>
+                    <button class="start-btn" id="tryDailyPuzzleBtn">Try Daily Puzzle</button>
+                    <button class="start-btn btn-secondary" id="restartTutorialBtn">Restart Tutorial</button>
+                </div>
+            `;
+            instructionsOverlayEl.classList.add('show');
+
+            document.getElementById('tryDailyPuzzleBtn').addEventListener('click', () => {
+                instructionsOverlayEl.classList.remove('show');
+                exitTutorial();
+                restoreInstructionsHTML();
+            });
+
+            document.getElementById('restartTutorialBtn').addEventListener('click', () => {
+                instructionsOverlayEl.classList.remove('show');
+                exitTutorial();
+                restoreInstructionsHTML();
+                setTimeout(startTutorial, 100);
+            });
+        }
+
+        function restoreInstructionsHTML() {
+            instructionsOverlayEl.innerHTML = `
+                <div class="instructions-popup">
+                    <button class="close-btn" id="closeInstructions">✕</button>
+                    <h2>How to Play</h2>
+                    <div class="instructions-content">
+                        <p class="goal">Transform the start word into the end word, one word at a time.</p>
+                        <div class="rule-box"><div class="rule-number">1</div><div class="rule-text">Click any word to select it</div></div>
+                        <div class="rule-box"><div class="rule-number">2</div><div class="rule-text">Type to enter the word</div></div>
+                        <div class="rule-box"><div class="rule-number">3</div><div style="display: flex; align-items: center; gap: 4px;"><div class="rule-text">Word pairs are</div><div class="edit-distance-indicator empty" style="min-width: 0px;"><span class="distance-arrow"><img src="arrow_top_left.svg" alt="↖" style="width: 16px; height: 16px;"></span><span class="distance">N</span><span class="distance-arrow"><img src="arrow_bottom_left.svg" alt="↙" style="width: 16px; height: 16px;"></span></div><div class="rule-text">edits apart</div></div></div>
+                        <div class="rule-box"><div class="rule-number">4</div><div class="rule-text">An edit is an insertion, deletion, or substitution</div></div>
+                        <div class="hint-box">All letters used are in the box below the ladder</div>
+                    </div>
+                    <button class="start-btn" id="startPlaying">Start Playing</button>
+                </div>
+            `;
+            const newCloseBtn = document.getElementById('closeInstructions');
+            const newStartBtn = document.getElementById('startPlaying');
+            if (newCloseBtn) newCloseBtn.addEventListener('click', hideInstructions);
+            if (newStartBtn) newStartBtn.addEventListener('click', hideInstructions);
+        }
+
+        // ============================================================================
         // Game State
         // ============================================================================
         let selectedDateString = getTodayString();
@@ -1982,6 +2510,12 @@
         let invalidWords = {};
         let gameWon = false;
         let puzzleStartTime = Date.now();
+
+        // Tutorial state
+        let tutorialMode = false;
+        let tutorialStep = 0;
+        let tutorialPuzzle = null;
+        let savedDailyState = null;
 
         // ============================================================================
         // DOM Element References
@@ -2008,6 +2542,22 @@
         const startPlayingBtn = document.getElementById('startPlaying');
         const helpBtn = document.getElementById('helpBtn');
 
+        // Tutorial DOM elements
+        const tutorialOverlayEl = document.getElementById('tutorialOverlay');
+        const tutorialSpotlightEl = document.getElementById('tutorialSpotlight');
+        const tutorialTooltipEl = document.getElementById('tutorialTooltip');
+        const tutorialProgressEl = document.getElementById('tutorialProgress');
+        const tutorialTitleEl = document.getElementById('tutorialTitle');
+        const tutorialTextEl = document.getElementById('tutorialText');
+        const tutorialNextBtn = document.getElementById('tutorialNextBtn');
+        const tutorialPromptOverlayEl = document.getElementById('tutorialPromptOverlay');
+        const startTutorialBtn = document.getElementById('startTutorialBtn');
+        const skipTutorialBtn = document.getElementById('skipTutorialBtn');
+        const helpMenuOverlayEl = document.getElementById('helpMenuOverlay');
+        const closeHelpMenuBtn = document.getElementById('closeHelpMenu');
+        const viewInstructionsBtn = document.getElementById('viewInstructionsBtn');
+        const playTutorialBtn = document.getElementById('playTutorialBtn');
+
         // ============================================================================
         // Event Listeners
         // ============================================================================
@@ -2015,20 +2565,71 @@
         resetBtn.addEventListener('click', resetPuzzle);
         closeInstructionsBtn.addEventListener('click', hideInstructions);
         startPlayingBtn.addEventListener('click', hideInstructions);
-        helpBtn.addEventListener('click', showInstructions);
+        helpBtn.addEventListener('click', showHelpMenu);
         closeStatsBtn.addEventListener('click', hideStats);
-        
+
         // Close instructions when clicking outside popup
         instructionsOverlayEl.addEventListener('click', (e) => {
             if (e.target === instructionsOverlayEl) {
                 hideInstructions();
             }
         });
-        
+
         // Close stats when clicking outside popup
         statsOverlayEl.addEventListener('click', (e) => {
             if (e.target === statsOverlayEl) {
                 hideStats();
+            }
+        });
+
+        // Tutorial event listeners
+        startTutorialBtn.addEventListener('click', () => {
+            hideTutorialPrompt();
+            startTutorial();
+        });
+
+        skipTutorialBtn.addEventListener('click', () => {
+            hideTutorialPrompt();
+        });
+
+        closeHelpMenuBtn.addEventListener('click', hideHelpMenu);
+
+        viewInstructionsBtn.addEventListener('click', () => {
+            hideHelpMenu();
+            showInstructions();
+        });
+
+        playTutorialBtn.addEventListener('click', () => {
+            hideHelpMenu();
+            startTutorial();
+        });
+
+        tutorialNextBtn.addEventListener('click', () => {
+            if (tutorialStep === TUTORIAL_STEPS.EDIT_DISTANCE) {
+                advanceTutorialStep();
+            }
+        });
+
+        // Close help menu when clicking outside
+        helpMenuOverlayEl.addEventListener('click', (e) => {
+            if (e.target === helpMenuOverlayEl) {
+                hideHelpMenu();
+            }
+        });
+
+        // Close tutorial prompt when clicking outside
+        tutorialPromptOverlayEl.addEventListener('click', (e) => {
+            if (e.target === tutorialPromptOverlayEl) {
+                hideTutorialPrompt();
+            }
+        });
+
+        // Escape key to exit tutorial
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && tutorialMode) {
+                if (confirm('Exit tutorial and return to daily puzzle?')) {
+                    exitTutorial();
+                }
             }
         });
 
