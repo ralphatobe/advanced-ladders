@@ -1229,6 +1229,11 @@
          * Converts to Set for O(1) lookup time
          * Requires serving via HTTP server (not file://)
          */
+        async function loadPuzzles() {
+            const response = await fetch('puzzles.json');
+            puzzles = await response.json();
+        }
+
         async function loadDictionary() {
             try {
                 const response = await fetch('words_alpha_filt.txt', {
@@ -1277,43 +1282,7 @@
             return dictionary.has(word.toUpperCase());
         }
 
-        const puzzles = [
-            ['START', 'STARTS', 'STANDS', 'HANDS', 'AIDS', 'WINS'],
-            ['STRONGER', 'STROLLER', 'ROLLER', 'ROLL', 'RELY', 'REELS'],
-            ['IMPULSE', 'PULSE', 'PARSE', 'WORSE', 'WARE', 'WARM'],
-            ['LIFTED', 'FITTED', 'TITLED', 'FILED', 'TIMED', 'AIMED'],
-            ['SCENE', 'STONE', 'SPOKE', 'SHOE', 'HOSE', 'RISE'],
-            ['LOADER', 'LOCKER', 'LOCKS', 'LOCUS', 'BLOCKS', 'SHOCKS'],
-            ['PRAY', 'PREY', 'THEY', 'THIN', 'TWINS', 'MAINS'],
-            ['HIMSELF', 'ITSELF', 'SELF', 'SELLS', 'TELLS', 'CALLS'],
-            ['ROUTER', 'ROLLER', 'CALLER', 'WALKER', 'WALLET', 'WALNUT'],
-            ['REFUGE', 'REFUND', 'REBOUND', 'REBOUNDS', 'ROUNDS', 'ROUNDED'],
-            ['ITALIAN', 'ITALIC', 'STATIC', 'STATUS', 'STAGES', 'SNAKES'],
-            ['SPECIES', 'SPIES', 'SHIPS', 'SITS', 'SUITE', 'SMILE'],
-            ['JACK', 'PACE', 'MADE', 'MALE', 'BASE', 'BEAST'],
-            ['RETIRED', 'DESIRED', 'DESIGNED', 'UNSIGNED', 'ASSIGNED', 'ALIGNED'],
-            ['TRAVEL', 'TRAVELER', 'TRAILER', 'TRAINER', 'TRACKER', 'HACKER'],
-            ['ENABLE', 'VIABLE', 'VILLE', 'PILE', 'PICK', 'TICK'],
-            ['GOLD', 'GOAL', 'EVAL', 'ORAL', 'BRAS', 'BROS'],
-            ['MAKING', 'MIXING', 'BIKING', 'PICKING', 'LICKING', 'LOCKING'],
-            ['TWINK', 'TANK', 'LANG', 'SONG', 'SOME', 'MOLE'],
-            ['IMPLANTS', 'PLANTS', 'PARTS', 'PASTA', 'WASTE', 'WHITE'],
-            ['ADVISE', 'ADVERSE', 'ADVERTS', 'ALERTS', 'LETS', 'META'],
-            ['FOREVER', 'FORMER', 'FOLDER', 'FILTER', 'WINTER', 'WINE'],
-            ['SLAVES', 'SAVERS', 'SAVE', 'LIVE', 'LIMO', 'LISP'],
-            ['OVENS', 'LOVES', 'LOTUS', 'LOSS', 'MISS', 'MOST'],
-            ['STRIPES', 'STRIPE', 'SCRIPT', 'SCRAP', 'SCRUB', 'STUB'],
-            ['DENIED', 'DECIDED', 'DECADES', 'DECODER', 'ENCODER', 'ENCORE'],
-            ['SENATORS', 'SENSORS', 'SENIORS', 'SENSORY', 'SENSOR', 'SECTOR'],
-            ['POEMS', 'PORTS', 'POST', 'FOOT', 'LOOK', 'WOOL'],
-            ['USER', 'UNDER', 'FOUNDER', 'WOUNDED', 'WOUNDS', 'WOULD'],
-            ['THINK', 'TICK', 'STACK', 'STUCK', 'DUCK', 'SUCKS'],
-            ['ADULTS', 'FAULTS', 'FATS', 'CAMS', 'CANE', 'RARE'],
-            ['HERBAL', 'HEAL', 'SHEAR', 'SHELL', 'HULL', 'HALLS'],
-            ['POTTER', 'POTTERY', 'LOTTERY', 'BATTERY', 'ARTERY', 'ARCHERY'],
-            ['FLOOR', 'FOUR', 'SOUL', 'SOUTH', 'SUCH', 'SECT'],
-            ['ENCODER', 'ENCORE', 'INCOME', 'BECOME', 'COME', 'DONE'],
-        ];
+        let puzzles = null; // loaded from puzzles.json in init()
 
         // Get today's date as a string (YYYY-MM-DD)
         function getTodayString() {
@@ -1384,8 +1353,10 @@
         }
 
         // Initialize game
-        function init() {
-            loadDictionary();
+        async function init() {
+            await loadPuzzles();
+            currentPuzzle = derivePuzzle(puzzles[currentPuzzleIndex]);
+            loadDictionary(); // fire-and-forget; game works while dictionary loads
             updateDailyDate();
             loadProgress();
             generateAvailableLetters();
@@ -2375,7 +2346,7 @@
         // ============================================================================
         let selectedDateString = getTodayString();
         let currentPuzzleIndex = getPuzzleIndexForDate(selectedDateString);
-        let currentPuzzle = derivePuzzle(puzzles[currentPuzzleIndex]);
+        let currentPuzzle = null; // initialized in init() after puzzles.json loads
         let selectedWordIndex = 1;
         let selectedLetterIndex = 0; // cursor position within the selected word
         let userWords = {};
