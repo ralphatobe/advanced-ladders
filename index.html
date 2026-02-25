@@ -1355,6 +1355,7 @@
         // Initialize game
         async function init() {
             await loadPuzzles();
+            currentPuzzleIndex = getPuzzleIndexForDate(selectedDateString);
             currentPuzzle = derivePuzzle(puzzles[currentPuzzleIndex]);
             loadDictionary(); // fire-and-forget; game works while dictionary loads
             updateDailyDate();
@@ -2345,7 +2346,7 @@
         // Game State
         // ============================================================================
         let selectedDateString = getTodayString();
-        let currentPuzzleIndex = getPuzzleIndexForDate(selectedDateString);
+        let currentPuzzleIndex = 0; // set in init() after puzzles.json loads
         let currentPuzzle = null; // initialized in init() after puzzles.json loads
         let selectedWordIndex = 1;
         let selectedLetterIndex = 0; // cursor position within the selected word
