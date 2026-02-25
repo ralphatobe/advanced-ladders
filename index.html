@@ -849,6 +849,237 @@
             font-size: 0.9em;
             color: #92400e;
         }
+
+        /* =========================================================
+           Custom Date Picker / Calendar
+           ========================================================= */
+
+        .custom-date-picker {
+            position: relative;
+            display: inline-block;
+        }
+
+        .date-trigger-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            background: white;
+            font-family: inherit;
+            font-size: 1em;
+            color: #333;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            white-space: nowrap;
+        }
+
+        .date-trigger-btn:hover,
+        .date-trigger-btn:focus {
+            border-color: #77216f;
+            outline: none;
+        }
+
+        .date-trigger-arrow {
+            font-size: 0.7em;
+            color: #999;
+        }
+
+        .calendar-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            z-index: 500;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 12px;
+            min-width: 268px;
+        }
+
+        .calendar-dropdown--open {
+            display: block;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            gap: 8px;
+        }
+
+        .calendar-nav-btn {
+            background: none;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.85em;
+            color: #555;
+            transition: background 0.15s;
+            flex-shrink: 0;
+        }
+
+        .calendar-nav-btn:hover:not(:disabled) {
+            background: #f0f4ff;
+            border-color: #77216f;
+            color: #77216f;
+        }
+
+        .calendar-nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .calendar-month-label {
+            font-weight: bold;
+            color: #77216f;
+            font-size: 0.95em;
+            text-align: center;
+            flex: 1;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-size: 0.72em;
+            color: #999;
+            font-weight: 600;
+            padding: 4px 0;
+            text-transform: uppercase;
+        }
+
+        .calendar-day {
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 500;
+            border: 2px solid transparent;
+            cursor: default;
+            transition: filter 0.1s;
+            user-select: none;
+        }
+
+
+        .calendar-day--won {
+            background: #22c55e;
+            color: white;
+            cursor: pointer;
+        }
+
+        .calendar-day--won:hover {
+            filter: brightness(0.9);
+        }
+
+        .calendar-day--attempted {
+            background: #eab308;
+            color: white;
+            cursor: pointer;
+        }
+
+        .calendar-day--attempted:hover {
+            filter: brightness(0.9);
+        }
+
+        .calendar-day--available {
+            background: #f8f9fa;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .calendar-day--available:hover {
+            background: #e8ecf5;
+        }
+
+        .calendar-day--disabled {
+            background: #f3f4f6;
+            color: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        /* Selected day: ring visible on any status background */
+        .calendar-day--selected {
+            border-color: #77216f;
+            box-shadow: 0 0 0 1px #77216f;
+        }
+
+        /* Today indicator: small orange dot below the day number */
+        .calendar-day--today {
+            position: relative;
+        }
+
+        .calendar-day--today::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #e95420;
+        }
+
+        /* Legend below the calendar grid */
+        .calendar-legend {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75em;
+            color: #555;
+        }
+
+        .legend-item::before {
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .legend-item--won::before { background: #22c55e; }
+        .legend-item--attempted::before { background: #eab308; }
+        .legend-item--available::before { background: #f8f9fa; border: 1px solid #ddd; }
+
+        @media (max-width: 480px) {
+            .calendar-dropdown {
+                left: 50%;
+                transform: translateX(-50%);
+                min-width: 240px;
+            }
+
+            .calendar-day {
+                width: 30px;
+                height: 30px;
+                font-size: 0.78em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -862,7 +1093,28 @@
         <div class="daily-info" id="dailyInfo">
             <div class="daily-header">
                 <span class="daily-label">📅 Daily Puzzle: </span>
-                <input type="date" id="datePicker" style="padding:8px; border-radius:6px; border:1px solid #ddd;">
+                <!-- Hidden native input — keeps updateDailyDate() working -->
+                <input type="date" id="datePicker" style="display:none;">
+                <!-- Custom calendar picker -->
+                <div class="custom-date-picker" id="customDatePicker">
+                    <button class="date-trigger-btn" id="dateTriggerBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                        <span id="dateTriggerLabel">Loading...</span>
+                        <span class="date-trigger-arrow" aria-hidden="true">&#9660;</span>
+                    </button>
+                    <div class="calendar-dropdown" id="calendarDropdown" role="dialog" aria-label="Date picker">
+                        <div class="calendar-nav">
+                            <button class="calendar-nav-btn" id="calPrevBtn" type="button" aria-label="Previous month">&#9664;</button>
+                            <span class="calendar-month-label" id="calMonthLabel"></span>
+                            <button class="calendar-nav-btn" id="calNextBtn" type="button" aria-label="Next month">&#9654;</button>
+                        </div>
+                        <div class="calendar-grid" id="calendarGrid" role="grid"></div>
+                        <div class="calendar-legend">
+                            <span class="legend-item legend-item--won">Solved</span>
+                            <span class="legend-item legend-item--attempted">In progress</span>
+                            <span class="legend-item legend-item--available">Not started</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1069,6 +1321,35 @@
             return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         }
 
+        // Converts 'YYYY-MM-DD' to a human-readable string like "Nov 1, 2025"
+        function formatDateForTrigger(dateString) {
+            if (!dateString) return '';
+            const parts = dateString.split('-').map(Number);
+            const d = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+        }
+
+        // Switches the active puzzle to the given date string (YYYY-MM-DD).
+        // Extracted so both the hidden input change handler and the custom calendar can call it.
+        function switchToDate(dateString) {
+            selectedDateString = dateString || getTodayString();
+            currentPuzzleIndex = getPuzzleIndexForDate(selectedDateString);
+            currentPuzzle = derivePuzzle(puzzles[currentPuzzleIndex]);
+            selectedWordIndex = 1;
+            selectedLetterIndex = 0;
+            userWords = {};
+            letterTimestamps = {};
+            gameWon = false;
+            showSolutionBtn.disabled = false;
+            loadProgress();
+            generateAvailableLetters();
+            updateDailyDate();
+            updateDisplay();
+            // Update trigger label
+            const triggerLabel = document.getElementById('dateTriggerLabel');
+            if (triggerLabel) triggerLabel.textContent = formatDateForTrigger(selectedDateString);
+        }
+
         function getPuzzleIndexForDate(dateString) {
             const START_DATE = '2025-11-01';
             if (!dateString) return 0;
@@ -1101,6 +1382,9 @@
             generateAvailableLetters();
             updateDisplay();
             document.addEventListener('keydown', handleKeyPress);
+            // Initialize the custom date picker trigger label
+            const triggerLabel = document.getElementById('dateTriggerLabel');
+            if (triggerLabel) triggerLabel.textContent = formatDateForTrigger(selectedDateString);
             checkFirstVisit();
         }
 
@@ -1314,6 +1598,34 @@
                 startTime: puzzleStartTime
             };
             localStorage.setItem('wordLadderProgress', JSON.stringify(data));
+        }
+
+        // Returns the full wordLadderProgress object from localStorage (parsed once).
+        function getProgressData() {
+            const saved = localStorage.getItem('wordLadderProgress');
+            if (!saved) return {};
+            try { return JSON.parse(saved); } catch (e) { return {}; }
+        }
+
+        // Returns the completion status of a given date for calendar display.
+        // 'won' | 'attempted' | 'available' | 'disabled'
+        function getDayStatus(dateString, progressData) {
+            const START_DATE = '2025-11-01';
+            const today = getTodayString();
+            if (dateString < START_DATE || dateString > today) return 'disabled';
+
+            const entry = progressData[`daily-${dateString}`];
+            if (!entry) return 'available';
+            if (entry.won === true) return 'won';
+
+            // Check if any letter has been entered
+            if (entry.userWords) {
+                for (const word of Object.values(entry.userWords)) {
+                    if (Array.isArray(word) && word.some(l => l !== '')) return 'attempted';
+                    if (typeof word === 'string' && word.length > 0) return 'attempted';
+                }
+            }
+            return 'available';
         }
 
         // Update display
@@ -1857,6 +2169,7 @@
                     gameWon = true;
                     showVictory();
                     saveProgress();
+                    renderCalendar();
                 } else {
                     // Check which validation failed for better error message
                     const firstInvalidWord = findFirstInvalidWord();
@@ -2014,7 +2327,8 @@
             gameWon = true;
             updateDisplay();
             saveProgress();
-            
+            renderCalendar();
+
             const stats = updateStats(false, true);
             showStats('💡 Solution', true);
         }
@@ -2029,6 +2343,7 @@
             hideStats();
             updateDisplay();
             saveProgress();
+            renderCalendar();
         }
 
         // ============================================================================
@@ -2046,6 +2361,9 @@
         let invalidWords = {};
         let gameWon = false;
         let puzzleStartTime = Date.now();
+        // Calendar view state (which month the open calendar is displaying)
+        let calendarViewYear = null;
+        let calendarViewMonth = null; // 0-based (January = 0)
 
         // ============================================================================
         // Word Array Helpers
@@ -2109,6 +2427,106 @@
         const helpBtn = document.getElementById('helpBtn');
 
         // ============================================================================
+        // Calendar Functions
+        // ============================================================================
+
+        function renderCalendar() {
+            if (calendarViewYear === null) return; // not yet opened, skip
+
+            const grid = document.getElementById('calendarGrid');
+            const monthLabel = document.getElementById('calMonthLabel');
+            const prevBtn = document.getElementById('calPrevBtn');
+            const nextBtn = document.getElementById('calNextBtn');
+            if (!grid) return;
+
+            const progressData = getProgressData();
+            const today = getTodayString();
+            const todayDate = new Date();
+            const MONTH_NAMES = ['January','February','March','April','May','June',
+                                 'July','August','September','October','November','December'];
+
+            monthLabel.textContent = `${MONTH_NAMES[calendarViewMonth]} ${calendarViewYear}`;
+
+            // Disable prev if we are at November 2025 (the first month with puzzles)
+            prevBtn.disabled = (calendarViewYear === 2025 && calendarViewMonth === 10);
+            // Disable next if we are at or past the current month
+            nextBtn.disabled = (calendarViewYear === todayDate.getFullYear() && calendarViewMonth >= todayDate.getMonth());
+
+            const DAY_HEADERS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+            let html = '';
+
+            // Day-of-week headers
+            for (const h of DAY_HEADERS) {
+                html += `<div class="calendar-day-header">${h}</div>`;
+            }
+
+            // Blank spacer cells before the 1st
+            const firstDay = new Date(calendarViewYear, calendarViewMonth, 1).getDay();
+            for (let i = 0; i < firstDay; i++) {
+                html += '<div class="calendar-day calendar-day--empty"></div>';
+            }
+
+            // One cell per day of the month
+            const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const mm = String(calendarViewMonth + 1).padStart(2, '0');
+                const dd = String(day).padStart(2, '0');
+                const dateStr = `${calendarViewYear}-${mm}-${dd}`;
+
+                const status = getDayStatus(dateStr, progressData);
+                const isSelected = (dateStr === selectedDateString);
+                const isToday = (dateStr === today);
+
+                let classes = `calendar-day calendar-day--${status}`;
+                if (isSelected) classes += ' calendar-day--selected';
+                if (isToday) classes += ' calendar-day--today';
+
+                if (status === 'disabled') {
+                    html += `<div class="${classes}">${day}</div>`;
+                } else {
+                    html += `<div class="${classes}" role="button" tabindex="0" data-date="${dateStr}">${day}</div>`;
+                }
+            }
+
+            grid.innerHTML = html;
+
+            // Attach click/keyboard handlers via event delegation on day cells
+            grid.querySelectorAll('.calendar-day[data-date]').forEach(cell => {
+                cell.addEventListener('click', () => {
+                    switchToDate(cell.dataset.date);
+                    closeCalendar();
+                });
+                cell.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        switchToDate(cell.dataset.date);
+                        closeCalendar();
+                    }
+                });
+            });
+        }
+
+        function openCalendar() {
+            const parts = selectedDateString.split('-').map(Number);
+            calendarViewYear = parts[0];
+            calendarViewMonth = parts[1] - 1; // 0-based
+
+            const dropdown = document.getElementById('calendarDropdown');
+            const triggerBtn = document.getElementById('dateTriggerBtn');
+            if (dropdown) dropdown.classList.add('calendar-dropdown--open');
+            if (triggerBtn) triggerBtn.setAttribute('aria-expanded', 'true');
+
+            renderCalendar();
+        }
+
+        function closeCalendar() {
+            const dropdown = document.getElementById('calendarDropdown');
+            const triggerBtn = document.getElementById('dateTriggerBtn');
+            if (dropdown) dropdown.classList.remove('calendar-dropdown--open');
+            if (triggerBtn) triggerBtn.setAttribute('aria-expanded', 'false');
+        }
+
+        // ============================================================================
         // Event Listeners
         // ============================================================================
         showSolutionBtn.addEventListener('click', showSolution);
@@ -2132,33 +2550,45 @@
             }
         });
 
-        // Date picker: load puzzles for selected date
+        // Hidden date input: kept for updateDailyDate() compatibility
         if (datePickerEl) {
-            const startDate = '2025-11-01';
-            const today = getTodayString();
-            
-            datePickerEl.min = startDate;
-            datePickerEl.max = today;
-            
-            // initialize picker value
-            datePickerEl.value = selectedDateString;
             datePickerEl.addEventListener('change', (e) => {
-                selectedDateString = e.target.value || getTodayString();
-                currentPuzzleIndex = getPuzzleIndexForDate(selectedDateString);
-                currentPuzzle = derivePuzzle(puzzles[currentPuzzleIndex]);
-                selectedWordIndex = 1;
-                selectedLetterIndex = 0;
-                userWords = {};
-                letterTimestamps = {};
-                gameWon = false;
-                showSolutionBtn.disabled = false;
-                // Load any saved progress for this date
-                loadProgress();
-                generateAvailableLetters();
-                updateDailyDate();
-                updateDisplay();
+                switchToDate(e.target.value || getTodayString());
             });
         }
+
+        // Custom calendar picker — trigger button toggle
+        document.getElementById('dateTriggerBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const dropdown = document.getElementById('calendarDropdown');
+            if (dropdown && dropdown.classList.contains('calendar-dropdown--open')) {
+                closeCalendar();
+            } else {
+                openCalendar();
+            }
+        });
+
+        // Calendar month navigation
+        document.getElementById('calPrevBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (calendarViewMonth === 0) { calendarViewMonth = 11; calendarViewYear--; }
+            else { calendarViewMonth--; }
+            renderCalendar();
+        });
+        document.getElementById('calNextBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (calendarViewMonth === 11) { calendarViewMonth = 0; calendarViewYear++; }
+            else { calendarViewMonth++; }
+            renderCalendar();
+        });
+
+        // Click outside the calendar picker → close it
+        document.addEventListener('click', (e) => {
+            const picker = document.getElementById('customDatePicker');
+            if (picker && !picker.contains(e.target)) {
+                closeCalendar();
+            }
+        });
 
         // Initialize on load
         init();
