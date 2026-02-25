@@ -2201,6 +2201,15 @@
             }
             fullLadder.push(currentPuzzle.target);
 
+            // Validate each intermediate word is in the dictionary
+            if (dictionaryLoaded) {
+                for (let i = 1; i < fullLadder.length - 1; i++) {
+                    if (!isValidWord(fullLadder[i])) {
+                        return false;
+                    }
+                }
+            }
+
             // Validate each step - must match target distance
             for (let i = 1; i < fullLadder.length; i++) {
                 const editDist = calculateEditDistance(fullLadder[i-1], fullLadder[i]);
