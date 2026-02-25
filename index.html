@@ -1332,6 +1332,13 @@
         // Switches the active puzzle to the given date string (YYYY-MM-DD).
         // Extracted so both the hidden input change handler and the custom calendar can call it.
         function switchToDate(dateString) {
+            // Flush current session time into accumulated seconds for the old puzzle
+            if (activeSessionStart !== null && !gameWon) {
+                accumulatedSeconds += Math.floor((Date.now() - activeSessionStart) / 1000);
+                activeSessionStart = null;
+            }
+            saveProgress(); // persist the old puzzle's accumulated time before switching
+
             selectedDateString = dateString || getTodayString();
             currentPuzzleIndex = getPuzzleIndexForDate(selectedDateString);
             currentPuzzle = derivePuzzle(puzzles[currentPuzzleIndex]);
@@ -1340,8 +1347,10 @@
             userWords = {};
             letterTimestamps = {};
             gameWon = false;
+            accumulatedSeconds = 0;
+            activeSessionStart = null;
             showSolutionBtn.disabled = false;
-            loadProgress();
+            loadProgress(); // restores accumulatedSeconds and sets activeSessionStart for new puzzle
             generateAvailableLetters();
             updateDailyDate();
             updateDisplay();
@@ -1451,12 +1460,8 @@
                     }
 
                     stats.maxStreak = Math.max(stats.maxStreak, stats.currentStreak);
-                    // Record completion time if we have a start time
-                    if (puzzleStartTime) {
-                        const elapsedSeconds = Math.round((Date.now() - puzzleStartTime) / 1000);
-                        stats.completionSeconds = elapsedSeconds;
-                        console.log('Completion time recorded:', elapsedSeconds, 'seconds');
-                    }
+                    // Record active completion time (excludes time the page was hidden)
+                    stats.completionSeconds = getElapsedSeconds();
                 } else if (!won && !usedSolution) {
                     // Lost - reset streak
                     stats.currentStreak = 0;
@@ -1492,6 +1497,14 @@
         }
 
         // Format seconds into M:SS or H:MM:SS when large
+        // Returns total active seconds spent on the current puzzle.
+        function getElapsedSeconds() {
+            const sessionTime = activeSessionStart !== null
+                ? Math.floor((Date.now() - activeSessionStart) / 1000)
+                : 0;
+            return accumulatedSeconds + sessionTime;
+        }
+
         function formatSeconds(totalSeconds) {
             if (totalSeconds === null || totalSeconds === undefined) return '--:--';
             const hours = Math.floor(totalSeconds / 3600);
@@ -1568,6 +1581,9 @@
                     letterTimestamps = data[dayKey].letterTimestamps || {};
                     gameWon = data[dayKey].won || false;
                     puzzleStartTime = data[dayKey].startTime || Date.now();
+                    // Restore active-time timer state
+                    accumulatedSeconds = data[dayKey].accumulatedSeconds || 0;
+                    activeSessionStart = gameWon ? null : Date.now();
                     // Migrate old string-format entries to fixed-length arrays
                     for (const i in userWords) {
                         if (typeof userWords[i] === 'string') {
@@ -1582,7 +1598,12 @@
                     letterTimestamps = {};
                     gameWon = false;
                     puzzleStartTime = Date.now();
+                    accumulatedSeconds = 0;
+                    activeSessionStart = Date.now();
                 }
+            } else {
+                accumulatedSeconds = 0;
+                activeSessionStart = Date.now();
             }
         }
 
@@ -1595,7 +1616,8 @@
                 userWords: userWords,
                 letterTimestamps: letterTimestamps,
                 won: gameWon,
-                startTime: puzzleStartTime
+                startTime: puzzleStartTime,
+                accumulatedSeconds: accumulatedSeconds
             };
             localStorage.setItem('wordLadderProgress', JSON.stringify(data));
         }
@@ -2339,6 +2361,8 @@
             userWords = {};
             letterTimestamps = {};
             gameWon = false;
+            accumulatedSeconds = 0;
+            activeSessionStart = Date.now(); // timer starts fresh on reset
             showSolutionBtn.disabled = false;
             hideStats();
             updateDisplay();
@@ -2360,7 +2384,10 @@
         // Track words that failed dictionary validation (index -> true)
         let invalidWords = {};
         let gameWon = false;
-        let puzzleStartTime = Date.now();
+        let puzzleStartTime = Date.now(); // kept for backward-compat in saveProgress
+        // Active-time timer: only counts seconds while the page is visible
+        let accumulatedSeconds = 0;    // seconds of active time before current session
+        let activeSessionStart = null; // Date.now() when current session started, null if hidden
         // Calendar view state (which month the open calendar is displaying)
         let calendarViewYear = null;
         let calendarViewMonth = null; // 0-based (January = 0)
@@ -2587,6 +2614,23 @@
             const picker = document.getElementById('customDatePicker');
             if (picker && !picker.contains(e.target)) {
                 closeCalendar();
+            }
+        });
+
+        // Page Visibility API: pause timer when tab is hidden, resume when visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Tab hidden or browser minimized — accumulate and pause
+                if (activeSessionStart !== null) {
+                    accumulatedSeconds += Math.floor((Date.now() - activeSessionStart) / 1000);
+                    activeSessionStart = null;
+                    saveProgress(); // persist so a browser close doesn't lose active time
+                }
+            } else {
+                // Tab visible again — resume session clock if puzzle not yet won
+                if (!gameWon) {
+                    activeSessionStart = Date.now();
+                }
             }
         });
 
