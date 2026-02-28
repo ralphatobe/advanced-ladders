@@ -708,6 +708,24 @@
             display: flex;
             align-items: center;
         }
+        .tut-labels-left {
+            position: absolute;
+            right: 100%;
+            top: 0;
+            bottom: 0;
+            pointer-events: none;
+            margin-right: 8px;
+        }
+        .tut-label-row {
+            position: absolute;
+            right: 0;
+            display: flex;
+            align-items: center;
+            font-size: 0.75em;
+            font-weight: 600;
+            color: #9ca3af;
+            white-space: nowrap;
+        }
 
         /* Letter bank example in step 3 */
         .tut-bank-example {
@@ -1590,26 +1608,16 @@
                 case 1:
                     content.innerHTML = `
                         <h2>Edit Distance</h2>
-                        <p class="tut-intro">The number between each row tells you how many edits apart those words need to be.</p>
-                        <p class="tut-intro">An edit is swapping, adding, or removing one letter.</p>
-                        <div class="tut-edit-example">
-                            <div class="tut-edit-example-row">
-                                <span class="tut-ex-word">CAT</span> → add R after A →
-                                <span class="tut-ex-word">CART</span>
-                                <span class="tut-ex-badge">1 edit</span>
-                            </div>
-                            <div class="tut-edit-example-row">
-                                <span class="tut-ex-word">CART</span> → remove C →
-                                <span class="tut-ex-word">ART</span>
-                                <span class="tut-ex-badge">1 edit</span>
-                            </div>
-                            <div class="tut-edit-example-row">
-                                <span class="tut-ex-word">ART</span> → swap T for E →
-                                <span class="tut-ex-word">ARE</span>
-                                <span class="tut-ex-badge">1 edit</span>
-                            </div>
-                        </div>
+                        <p class="tut-intro">The number between each row tells you how many edits apart those words need to be. An edit is adding, removing, or swapping one letter.</p>
+                        <div id="tutorialPuzzleArea"></div>
                     `;
+                    renderCompletedTutorialPuzzle(
+                        ['CAT', 'CART', 'ART', 'ARE'],
+                        [1, 1, 1],
+                        document.getElementById('tutorialPuzzleArea'),
+                        [1, 2],
+                        ['ADD', 'REMOVE', 'SWAP']
+                    );
                     break;
 
                 case 2:
@@ -1625,9 +1633,8 @@
                 case 3:
                     content.innerHTML = `
                         <h2>The Letter Bank</h2>
-                        <p class="tut-intro">The letters you can use are shown in the bank below. The remaining count for each letter is shown in its corner.</p>
+                        <p class="tut-intro">The letters you can use are shown in the keyboard. The remaining count for each letter is shown in its top right corner.</p>
                         <div class="tut-bank-example">
-                            <div class="tut-bank-example-label">For example, this means you have 2 H's left to use:</div>
                             <div class="keyboard-key available" style="pointer-events:none;min-width:40px;height:50px;font-size:1.2em;position:relative;display:inline-flex;align-items:center;justify-content:center;">
                                 H<div class="key-badge">2</div>
                             </div>
@@ -1638,7 +1645,7 @@
                 case 4:
                     content.innerHTML = `
                         <h2>Put It Together</h2>
-                        <p class="tut-intro">Connect <strong>CAT</strong> to <strong>PER</strong>. You can fill in the words in any order.</p>
+                        <p class="tut-intro">Connect <strong>CAT</strong> to <strong>PER</strong>. You can fill in the words and letters in any order.</p>
                         <div id="tutorialPuzzleArea"></div>
                         <div id="tutorialKeyboardArea" class="tutorial-keyboard"></div>
                     `;
@@ -1661,15 +1668,18 @@
             const outer = container.querySelector('.tut-puzzle-outer');
             if (!outer) return;
             const steps = outer.querySelectorAll('.tut-step');
-            const distRows = outer.querySelectorAll('.tut-dist-row');
             const outerRect = outer.getBoundingClientRect();
-            distRows.forEach((row, i) => {
-                const topRect = steps[i].getBoundingClientRect();
-                const bottomRect = steps[i + 1].getBoundingClientRect();
-                const midpoint = ((topRect.bottom + bottomRect.top) / 2) - outerRect.top;
-                row.style.top = `${midpoint}px`;
-                row.style.transform = 'translateY(-50%)';
-            });
+            const positionRows = (rows) => {
+                rows.forEach((row, i) => {
+                    const topRect = steps[i].getBoundingClientRect();
+                    const bottomRect = steps[i + 1].getBoundingClientRect();
+                    const midpoint = ((topRect.bottom + bottomRect.top) / 2) - outerRect.top;
+                    row.style.top = `${midpoint}px`;
+                    row.style.transform = 'translateY(-50%)';
+                });
+            };
+            positionRows(outer.querySelectorAll('.tut-dist-row'));
+            positionRows(outer.querySelectorAll('.tut-label-row'));
         }
 
         function renderTutorialPuzzle(exerciseDef, userWords, selectedWord, selectedLetter, container, interactive) {
@@ -1727,9 +1737,10 @@
             requestAnimationFrame(() => positionTutorialIndicators(container));
         }
 
-        function renderCompletedTutorialPuzzle(words, distances, container, placeholderIndices = []) {
+        function renderCompletedTutorialPuzzle(words, distances, container, placeholderIndices = [], labels = []) {
             let stepsHtml = '';
             let indicatorsHtml = '';
+            let labelsHtml = '';
 
             for (let i = 0; i < words.length; i++) {
                 const isPlaceholder = placeholderIndices.includes(i);
@@ -1748,10 +1759,12 @@
                             <span class="distance-arrow"><img src="arrow_bottom_left.svg" alt="↙" style="width:14px;height:14px;"></span>
                         </div>
                     </div>`;
+                    if (labels[i]) labelsHtml += `<div class="tut-label-row">${labels[i]}</div>`;
                 }
             }
 
-            container.innerHTML = `<div class="tut-puzzle-wrap"><div class="tut-puzzle-outer"><div class="tut-ladder">${stepsHtml}</div><div class="tut-indicators">${indicatorsHtml}</div></div></div>`;
+            const labelsContainer = labelsHtml ? `<div class="tut-labels-left">${labelsHtml}</div>` : '';
+            container.innerHTML = `<div class="tut-puzzle-wrap"><div class="tut-puzzle-outer">${labelsContainer}<div class="tut-ladder">${stepsHtml}</div><div class="tut-indicators">${indicatorsHtml}</div></div></div>`;
             requestAnimationFrame(() => positionTutorialIndicators(container));
         }
 
