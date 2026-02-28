@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced Ladders</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="icon" type="image/png" sizes="24x24" href="favicon.png">
     <meta name="theme-color" content="#77216f">
@@ -508,7 +511,7 @@
             50% { transform: scale(1.05); }
         }
 
-        .instructions-overlay {
+        .tutorial-overlay {
             display: none;
             position: fixed;
             top: 0;
@@ -522,19 +525,23 @@
             padding: 20px;
         }
 
-        .instructions-overlay.show {
+        .tutorial-overlay.show {
             display: flex;
         }
 
-        .instructions-popup {
+        .tutorial-popup {
             background: white;
             border-radius: 20px;
-            padding: 50px 40px 40px;
+            padding: 40px 32px 28px;
             max-width: 450px;
             width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             position: relative;
             animation: slideUp 0.4s ease;
+            display: flex;
+            flex-direction: column;
         }
 
         @keyframes slideUp {
@@ -546,14 +553,6 @@
                 opacity: 1;
                 transform: translateY(0);
             }
-        }
-
-        .instructions-popup h2 {
-            color: #77216f;
-            margin-bottom: 25px;
-            text-align: center;
-            font-size: 2em;
-            font-weight: 700;
         }
 
         .close-btn {
@@ -580,75 +579,234 @@
             color: #333;
         }
 
-        .instructions-content {
-            margin-bottom: 30px;
+        /* Step progress dots */
+        .tutorial-step-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 18px;
+            flex-shrink: 0;
+        }
+        .tutorial-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e9d5ff;
+            transition: background 0.2s;
+        }
+        .tutorial-dot--active {
+            background: #77216f;
         }
 
-        .goal {
+        /* Tutorial content area */
+        .tutorial-content {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .tutorial-content h2 {
+            color: #77216f;
+            margin-bottom: 14px;
             text-align: center;
-            font-size: 1.1em;
-            color: #666;
-            margin-bottom: 30px;
+            font-size: 1.6em;
+            font-weight: 700;
+        }
+        .tut-intro {
+            text-align: center;
+            color: #555;
+            font-size: 1em;
             line-height: 1.5;
+            margin-bottom: 10px;
         }
 
-        .rule-box {
+        /* Edit distance explanation examples */
+        .tut-edit-example {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .tut-edit-example-row {
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin: 15px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            border-left: 4px solid #77216f;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 0.95em;
+            color: #444;
         }
-
-        .rule-number {
+        .tut-ex-word {
+            font-weight: 700;
+            color: #77216f;
+            font-family: monospace;
+            font-size: 1.05em;
+            letter-spacing: 2px;
+        }
+        .tut-ex-badge {
             background: #77216f;
             color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        /* Placeholder boxes on the intro puzzle (user-fillable words) */
+        .tut-placeholder-box {
+            background: white;
+            color: #e95420;
+            font-family: 'Caveat', cursive;
+            font-weight: 700;
+            padding-right: 4px;
+        }
+
+        /* Tutorial mini ladder — mirrors real game layout */
+        .tut-puzzle-wrap {
+            display: flex;
+            justify-content: center;
+            margin: 14px 0;
+        }
+        .tut-puzzle-outer {
+            position: relative;
+        }
+        .tut-ladder {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .tut-step {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            gap: 6px;
+            cursor: default;
+        }
+        .tut-step.tut-selected {
+            background: #e8ecf5;
+            border: 2px solid #77216f;
+            padding: 8px 13px;
+            margin: -2px;
+        }
+        .tut-indicators {
+            position: absolute;
+            left: 100%;
+            top: 0;
+            bottom: 0;
+            width: 44px;
+            pointer-events: none;
+            margin-left: 4px;
+        }
+        .tut-dist-row {
+            position: absolute;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Letter bank example in step 3 */
+        .tut-bank-example {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .tut-bank-example-label {
+            color: #555;
+            font-size: 0.95em;
+            text-align: center;
+        }
+
+        /* Tutorial keyboard (smaller keys than main game) */
+        .tutorial-keyboard {
+            margin-top: 12px;
+        }
+        .tutorial-keyboard .keyboard-row {
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+        .tutorial-keyboard .keyboard-key {
+            min-width: 30px;
+            height: 40px;
+            font-size: 1em;
+            padding: 0 4px;
+        }
+        .tutorial-keyboard .keyboard-key.wide {
+            min-width: 46px;
+        }
+        .tutorial-keyboard .key-badge {
+            width: 16px;
+            height: 16px;
+            font-size: 0.65em;
+            top: -4px;
+            right: -4px;
+        }
+
+        /* Completion screen */
+        .tut-complete-icon {
+            text-align: center;
+            font-size: 3em;
+            margin: 20px 0;
+        }
+
+        /* Bottom nav */
+        .tutorial-nav {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
             flex-shrink: 0;
         }
-
-        .rule-text {
-            color: #333;
-            font-size: 1em;
-            line-height: 1.4;
-        }
-
-        .hint-box {
-            margin-top: 25px;
-            padding: 15px;
-            background: #fff9e6;
-            border-radius: 12px;
-            text-align: center;
-            color: #92400e;
+        .tutorial-back-btn {
+            background: #f3e8ff;
+            color: #77216f;
+            border: 2px solid #d8b4fe;
+            border-radius: 10px;
+            padding: 10px 16px;
             font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
         }
-
-        .start-btn {
-            width: 100%;
-            padding: 15px;
+        .tutorial-back-btn:hover:not(:disabled) {
+            background: #ede9fe;
+        }
+        .tutorial-back-btn:disabled {
+            background: #d1d5db;
+            color: #9ca3af;
+            border-color: #d1d5db;
+            cursor: not-allowed;
+        }
+        .tutorial-next-btn {
             background: #77216f;
             color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 1.1em;
-            font-weight: bold;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 0.95em;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            flex: 1;
         }
-
-        .start-btn:hover {
+        .tutorial-next-btn:hover:not(:disabled) {
             background: #67115f;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            transform: translateY(-1px);
+        }
+        .tutorial-next-btn:disabled {
+            background: #d1d5db;
+            color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .stats-overlay {
@@ -1173,46 +1331,15 @@
             </div>
         </div>
 
-        <div class="instructions-overlay" id="instructionsOverlay">
-            <div class="instructions-popup">
-                <button class="close-btn" id="closeInstructions">✕</button>
-                <h2>How to Play</h2>
-                <div class="instructions-content">
-                    <p class="goal">Transform the start word into the end word, one word at a time.</p>
-                    
-                    <div class="rule-box">
-                        <div class="rule-number">1</div>
-                        <div class="rule-text">Click any word to select it</div>
-                    </div>
-                    
-                    <div class="rule-box">
-                        <div class="rule-number">2</div>
-                        <div class="rule-text">Type to enter the word</div>
-                    </div>
-                    
-                    <div class="rule-box">
-                        <div class="rule-number">3</div>
-                        <div style="display: flex; align-items: center; gap: 4px;">
-                            <div class="rule-text">Word pairs are</div>
-                            <div class="edit-distance-indicator empty" style="min-width: 0px;">
-                                <span class="distance-arrow"><img src="arrow_top_left.svg" alt="↖" style="width: 16px; height: 16px;"></span>
-                                <span class="distance">N</span>
-                                <span class="distance-arrow"><img src="arrow_bottom_left.svg" alt="↙" style="width: 16px; height: 16px;"></span>
-                            </div>
-                            <div class="rule-text">edits apart</div>
-                        </div>
-                    </div>
-                    
-                    <div class="rule-box">
-                        <div class="rule-number">4</div>
-                        <div class="rule-text">An edit is an insertion, deletion, or substitution</div>
-                    </div>
-                    
-                    <div class="hint-box">
-                        All letters used are in the box below the ladder
-                    </div>
+        <div class="tutorial-overlay" id="tutorialOverlay">
+            <div class="tutorial-popup">
+                <button class="close-btn" id="closeTutorial">✕</button>
+                <div class="tutorial-step-dots" id="tutorialDots"></div>
+                <div class="tutorial-content" id="tutorialContent"></div>
+                <div class="tutorial-nav">
+                    <button class="tutorial-back-btn" id="tutorialBack">← Back</button>
+                    <button class="tutorial-next-btn" id="tutorialNext">Next →</button>
                 </div>
-                <button class="start-btn" id="startPlaying">Start Playing</button>
             </div>
         </div>
     </div>
@@ -1371,21 +1498,404 @@
 
         // Check if this is the user's first visit
         function checkFirstVisit() {
-            const hasVisited = localStorage.getItem('wordLadderVisited');
-            if (!hasVisited) {
-                showInstructions();
-                localStorage.setItem('wordLadderVisited', 'true');
+            const hasDoneTutorial = localStorage.getItem('wordLadderTutorialDone');
+            if (!hasDoneTutorial) {
+                showTutorial();
             }
         }
 
-        // Show instructions popup
-        function showInstructions() {
-            instructionsOverlayEl.classList.add('show');
+        // ============================================================================
+        // Tutorial
+        // ============================================================================
+
+        const TUTORIAL_EX1 = {
+            start: 'CAT', target: 'HAD',
+            numBlanks: 1, distances: [1, 1], wordLength: 3
+        };
+        const TUTORIAL_EX2 = {
+            start: 'CAT', target: 'PER',
+            // Bank derived from intended intermediate words HAT + HER
+            availableLetters: ['A', 'E', 'H', 'H', 'R', 'T'],
+            numBlanks: 2, distances: [1, 2, 1], wordLength: 3
+        };
+
+        let tutorialActive = false;
+        let tutorialStep = 0;
+        let tutorialEx1Words = { 1: ['', '', ''] };
+        let tutorialEx2Words = { 1: ['', '', ''], 2: ['', '', ''] };
+        let tutorialSelectedWord = 1;
+        let tutorialSelectedLetter = 0;
+
+        function showTutorial() {
+            tutorialStep = 0;
+            tutorialEx1Words = { 1: ['', '', ''] };
+            tutorialEx2Words = { 1: ['', '', ''], 2: ['', '', ''] };
+            tutorialSelectedWord = 1;
+            tutorialSelectedLetter = 0;
+            tutorialActive = true;
+
+            const overlay = document.getElementById('tutorialOverlay');
+            const popup = overlay.querySelector('.tutorial-popup');
+            popup.style.minHeight = '';
+
+            // Show overlay with step 5 first to measure its natural height,
+            // then lock that as the minimum so the popup doesn't shrink on earlier steps.
+            overlay.classList.add('show');
+            renderTutorialStep(5);
+            requestAnimationFrame(() => {
+                popup.style.minHeight = popup.offsetHeight + 'px';
+                renderTutorialStep(0);
+            });
         }
 
-        // Hide instructions popup
-        function hideInstructions() {
-            instructionsOverlayEl.classList.remove('show');
+        function hideTutorial() {
+            tutorialActive = false;
+            document.getElementById('tutorialOverlay').classList.remove('show');
+            localStorage.setItem('wordLadderTutorialDone', 'true');
+        }
+
+        function renderTutorialStep(step) {
+            tutorialStep = step;
+            const content = document.getElementById('tutorialContent');
+            const dotsEl = document.getElementById('tutorialDots');
+            const nextBtn = document.getElementById('tutorialNext');
+            const backBtn = document.getElementById('tutorialBack');
+
+            // Step dots
+            let dotsHTML = '';
+            for (let i = 0; i <= 5; i++) {
+                dotsHTML += `<div class="tutorial-dot${i === step ? ' tutorial-dot--active' : ''}"></div>`;
+            }
+            dotsEl.innerHTML = dotsHTML;
+
+            backBtn.disabled = step === 0;
+            nextBtn.disabled = false;
+            nextBtn.textContent = step === 5 ? 'Start Playing' : 'Next →';
+
+            switch (step) {
+                case 0:
+                    content.innerHTML = `
+                        <h2>How to Play</h2>
+                        <p class="tut-intro">Connect the top word to the bottom word by filling in the words between them.</p>
+                        <div id="tutorialPuzzleArea"></div>
+                    `;
+                    renderCompletedTutorialPuzzle(
+                        ['CAT', 'CART', 'ART', 'ARE'],
+                        [1, 1, 1],
+                        document.getElementById('tutorialPuzzleArea'),
+                        [1, 2]
+                    );
+                    break;
+
+                case 1:
+                    content.innerHTML = `
+                        <h2>Edit Distance</h2>
+                        <p class="tut-intro">The number between each row tells you how many edits apart those words need to be.</p>
+                        <p class="tut-intro">An edit is swapping, adding, or removing one letter.</p>
+                        <div class="tut-edit-example">
+                            <div class="tut-edit-example-row">
+                                <span class="tut-ex-word">CAT</span> → add R after A →
+                                <span class="tut-ex-word">CART</span>
+                                <span class="tut-ex-badge">1 edit</span>
+                            </div>
+                            <div class="tut-edit-example-row">
+                                <span class="tut-ex-word">CART</span> → remove C →
+                                <span class="tut-ex-word">ART</span>
+                                <span class="tut-ex-badge">1 edit</span>
+                            </div>
+                            <div class="tut-edit-example-row">
+                                <span class="tut-ex-word">ART</span> → swap T for E →
+                                <span class="tut-ex-word">ARE</span>
+                                <span class="tut-ex-badge">1 edit</span>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 2:
+                    content.innerHTML = `
+                        <h2>Fill in the Blank</h2>
+                        <p class="tut-intro">Find a word that's 1 edit from <strong>CAT</strong> and 1 edit from <strong>HAD</strong>.</p>
+                        <div id="tutorialPuzzleArea"></div>
+                    `;
+                    renderTutorialPuzzle(TUTORIAL_EX1, tutorialEx1Words, tutorialSelectedWord, tutorialSelectedLetter, document.getElementById('tutorialPuzzleArea'), true);
+                    nextBtn.disabled = !checkTutorialExercise(1);
+                    break;
+
+                case 3:
+                    content.innerHTML = `
+                        <h2>The Letter Bank</h2>
+                        <p class="tut-intro">The letters you can use are shown in the bank below. The remaining count for each letter is shown in its corner.</p>
+                        <div class="tut-bank-example">
+                            <div class="tut-bank-example-label">For example, this means you have 2 H's left to use:</div>
+                            <div class="keyboard-key available" style="pointer-events:none;min-width:40px;height:50px;font-size:1.2em;position:relative;display:inline-flex;align-items:center;justify-content:center;">
+                                H<div class="key-badge">2</div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 4:
+                    content.innerHTML = `
+                        <h2>Put It Together</h2>
+                        <p class="tut-intro">Connect <strong>CAT</strong> to <strong>PER</strong>. You can fill in the words in any order.</p>
+                        <div id="tutorialPuzzleArea"></div>
+                        <div id="tutorialKeyboardArea" class="tutorial-keyboard"></div>
+                    `;
+                    renderTutorialPuzzle(TUTORIAL_EX2, tutorialEx2Words, tutorialSelectedWord, tutorialSelectedLetter, document.getElementById('tutorialPuzzleArea'), true);
+                    renderTutorialKeyboard(TUTORIAL_EX2.availableLetters, tutorialEx2Words, document.getElementById('tutorialKeyboardArea'));
+                    nextBtn.disabled = !checkTutorialExercise(2);
+                    break;
+
+                case 5:
+                    content.innerHTML = `
+                        <h2>You've Got It!</h2>
+                        <p class="tut-intro">You know everything you need. Good luck with today's puzzle!</p>
+                        <div class="tut-complete-icon">🎉</div>
+                    `;
+                    break;
+            }
+        }
+
+        function positionTutorialIndicators(container) {
+            const outer = container.querySelector('.tut-puzzle-outer');
+            if (!outer) return;
+            const steps = outer.querySelectorAll('.tut-step');
+            const distRows = outer.querySelectorAll('.tut-dist-row');
+            const outerRect = outer.getBoundingClientRect();
+            distRows.forEach((row, i) => {
+                const topRect = steps[i].getBoundingClientRect();
+                const bottomRect = steps[i + 1].getBoundingClientRect();
+                const midpoint = ((topRect.bottom + bottomRect.top) / 2) - outerRect.top;
+                row.style.top = `${midpoint}px`;
+                row.style.transform = 'translateY(-50%)';
+            });
+        }
+
+        function renderTutorialPuzzle(exerciseDef, userWords, selectedWord, selectedLetter, container, interactive) {
+            const allWords = [exerciseDef.start];
+            for (let i = 1; i <= exerciseDef.numBlanks; i++) {
+                allWords.push(userWords[i] || Array(exerciseDef.wordLength).fill(''));
+            }
+            allWords.push(exerciseDef.target);
+
+            let stepsHtml = '';
+            let indicatorsHtml = '';
+
+            for (let i = 0; i < allWords.length; i++) {
+                const word = allWords[i];
+                const isFixed = (i === 0 || i === allWords.length - 1);
+                const isSelected = interactive && !isFixed && selectedWord === i;
+                const stepClass = 'tut-step' + (isSelected ? ' tut-selected' : '');
+
+                stepsHtml += `<div class="${stepClass}">`;
+                for (let j = 0; j < exerciseDef.wordLength; j++) {
+                    const letter = typeof word === 'string' ? word[j] : (word[j] || '');
+                    let cls = 'letter-box';
+                    if (letter) cls += ' filled';
+                    if (isSelected && selectedLetter === j) cls += ' cursor';
+                    const dataAttrs = (interactive && !isFixed) ? ` data-word="${i}" data-letter="${j}"` : '';
+                    const cursor = (interactive && !isFixed) ? ' style="cursor:pointer"' : '';
+                    stepsHtml += `<div class="${cls}"${dataAttrs}${cursor}>${letter}</div>`;
+                }
+                stepsHtml += '</div>';
+
+                if (i < allWords.length - 1) {
+                    const dist = exerciseDef.distances[i];
+                    indicatorsHtml += `<div class="tut-dist-row">
+                        <div class="edit-distance-indicator empty">
+                            <span class="distance-arrow"><img src="arrow_top_left.svg" alt="↖" style="width:14px;height:14px;"></span>
+                            <span>${dist}</span>
+                            <span class="distance-arrow"><img src="arrow_bottom_left.svg" alt="↙" style="width:14px;height:14px;"></span>
+                        </div>
+                    </div>`;
+                }
+            }
+
+            container.innerHTML = `<div class="tut-puzzle-wrap"><div class="tut-puzzle-outer"><div class="tut-ladder">${stepsHtml}</div><div class="tut-indicators">${indicatorsHtml}</div></div></div>`;
+
+            if (interactive) {
+                container.querySelectorAll('[data-word]').forEach(el => {
+                    el.addEventListener('click', () => {
+                        tutorialSelectedWord = parseInt(el.dataset.word);
+                        tutorialSelectedLetter = parseInt(el.dataset.letter);
+                        renderTutorialStep(tutorialStep);
+                    });
+                });
+            }
+
+            requestAnimationFrame(() => positionTutorialIndicators(container));
+        }
+
+        function renderCompletedTutorialPuzzle(words, distances, container, placeholderIndices = []) {
+            let stepsHtml = '';
+            let indicatorsHtml = '';
+
+            for (let i = 0; i < words.length; i++) {
+                const isPlaceholder = placeholderIndices.includes(i);
+                stepsHtml += '<div class="tut-step">';
+                for (const letter of words[i]) {
+                    const cls = isPlaceholder ? 'letter-box tut-placeholder-box' : 'letter-box filled';
+                    stepsHtml += `<div class="${cls}">${letter}</div>`;
+                }
+                stepsHtml += '</div>';
+
+                if (i < words.length - 1) {
+                    indicatorsHtml += `<div class="tut-dist-row">
+                        <div class="edit-distance-indicator empty">
+                            <span class="distance-arrow"><img src="arrow_top_left.svg" alt="↖" style="width:14px;height:14px;"></span>
+                            <span>${distances[i]}</span>
+                            <span class="distance-arrow"><img src="arrow_bottom_left.svg" alt="↙" style="width:14px;height:14px;"></span>
+                        </div>
+                    </div>`;
+                }
+            }
+
+            container.innerHTML = `<div class="tut-puzzle-wrap"><div class="tut-puzzle-outer"><div class="tut-ladder">${stepsHtml}</div><div class="tut-indicators">${indicatorsHtml}</div></div></div>`;
+            requestAnimationFrame(() => positionTutorialIndicators(container));
+        }
+
+        function renderTutorialKeyboard(availableLetters, userWords, container) {
+            const letterCounts = {};
+            availableLetters.forEach(l => { letterCounts[l] = (letterCounts[l] || 0) + 1; });
+
+            const usedCounts = {};
+            Object.values(userWords).forEach(word => {
+                if (Array.isArray(word)) {
+                    word.forEach(l => { if (l) usedCounts[l] = (usedCounts[l] || 0) + 1; });
+                }
+            });
+
+            const rows = [
+                ['Q','W','E','R','T','Y','U','I','O','P'],
+                ['A','S','D','F','G','H','J','K','L'],
+                ['Z','X','C','V','B','N','M','⌫']
+            ];
+
+            let html = '';
+            rows.forEach(row => {
+                html += '<div class="keyboard-row">';
+                row.forEach(key => {
+                    if (key === '⌫') {
+                        html += `<div class="keyboard-key wide" data-key="BACKSPACE" style="background:#ef4444;border-color:#dc2626;color:white;">⌫</div>`;
+                        return;
+                    }
+                    const inBag = letterCounts[key] !== undefined;
+                    const used = usedCounts[key] || 0;
+                    const rem = (letterCounts[key] || 0) - used;
+                    if (!inBag) {
+                        html += `<div class="keyboard-key unavailable">${key}</div>`;
+                    } else if (rem <= 0) {
+                        html += `<div class="keyboard-key depleted">${key}<div class="key-badge zero">0</div></div>`;
+                    } else {
+                        html += `<div class="keyboard-key available" data-key="${key}">${key}<div class="key-badge">${rem}</div></div>`;
+                    }
+                });
+                html += '</div>';
+            });
+            container.innerHTML = html;
+
+            container.querySelectorAll('.keyboard-key[data-key]').forEach(el => {
+                el.addEventListener('click', () => handleTutorialKey(el.dataset.key));
+            });
+        }
+
+        function handleTutorialKey(key) {
+            const exerciseNum = (tutorialStep === 2) ? 1 : (tutorialStep === 4) ? 2 : 0;
+            if (!exerciseNum) return;
+
+            const userWords = exerciseNum === 1 ? tutorialEx1Words : tutorialEx2Words;
+            const exerciseDef = exerciseNum === 1 ? TUTORIAL_EX1 : TUTORIAL_EX2;
+            const numBlanks = exerciseDef.numBlanks;
+            const wordLength = exerciseDef.wordLength;
+
+            if (key === 'BACKSPACE') {
+                const arr = userWords[tutorialSelectedWord];
+                if (!arr) return;
+                if (arr[tutorialSelectedLetter] !== '') {
+                    arr[tutorialSelectedLetter] = '';
+                } else if (tutorialSelectedLetter > 0) {
+                    tutorialSelectedLetter--;
+                    arr[tutorialSelectedLetter] = '';
+                } else {
+                    // Move to last letter of previous word
+                    const prev = tutorialSelectedWord - 1;
+                    if (prev >= 1 && userWords[prev]) {
+                        tutorialSelectedWord = prev;
+                        tutorialSelectedLetter = wordLength - 1;
+                        userWords[tutorialSelectedWord][tutorialSelectedLetter] = '';
+                    }
+                }
+            } else {
+                if (!userWords[tutorialSelectedWord]) {
+                    userWords[tutorialSelectedWord] = Array(wordLength).fill('');
+                }
+                userWords[tutorialSelectedWord][tutorialSelectedLetter] = key;
+
+                // Advance cursor to next empty slot in this word
+                const arr = userWords[tutorialSelectedWord];
+                let advanced = false;
+                for (let i = tutorialSelectedLetter + 1; i < wordLength; i++) {
+                    if (!arr[i]) { tutorialSelectedLetter = i; advanced = true; break; }
+                }
+                if (!advanced) {
+                    for (let i = 0; i < tutorialSelectedLetter; i++) {
+                        if (!arr[i]) { tutorialSelectedLetter = i; advanced = true; break; }
+                    }
+                }
+                // If word full, try to move to next unfilled word
+                if (!advanced && exerciseNum === 2) {
+                    for (let w = tutorialSelectedWord + 1; w <= numBlanks; w++) {
+                        const nextArr = userWords[w];
+                        if (nextArr) {
+                            const ei = nextArr.findIndex(l => !l);
+                            if (ei !== -1) {
+                                tutorialSelectedWord = w;
+                                tutorialSelectedLetter = ei;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            renderTutorialStep(tutorialStep);
+
+            // Exercise 2: enable Next when complete (no auto-advance)
+            if (exerciseNum === 2) {
+                document.getElementById('tutorialNext').disabled = !checkTutorialExercise(2);
+            }
+        }
+
+        function checkTutorialExercise(exerciseNum) {
+            if (exerciseNum === 1) {
+                const arr = tutorialEx1Words[1] || [];
+                if (arr.some(l => l === '')) return false;
+                const word = arr.join('');
+                if (calculateEditDistance('CAT', word) !== 1) return false;
+                if (calculateEditDistance(word, 'HAD') !== 1) return false;
+                return true;
+            }
+            if (exerciseNum === 2) {
+                const arr1 = tutorialEx2Words[1] || [];
+                const arr2 = tutorialEx2Words[2] || [];
+                if (arr1.some(l => l === '') || arr2.some(l => l === '')) return false;
+                const w1 = arr1.join('');
+                const w2 = arr2.join('');
+                if (calculateEditDistance(TUTORIAL_EX2.start, w1) !== TUTORIAL_EX2.distances[0]) return false;
+                if (calculateEditDistance(w1, w2) !== TUTORIAL_EX2.distances[1]) return false;
+                if (calculateEditDistance(w2, TUTORIAL_EX2.target) !== TUTORIAL_EX2.distances[2]) return false;
+                // Check letter bank usage
+                const bankCounts = {};
+                TUTORIAL_EX2.availableLetters.forEach(l => { bankCounts[l] = (bankCounts[l] || 0) + 1; });
+                const usedCounts = {};
+                for (const l of w1 + w2) { usedCounts[l] = (usedCounts[l] || 0) + 1; }
+                for (const l in usedCounts) {
+                    if (usedCounts[l] > (bankCounts[l] || 0)) return false;
+                }
+                return true;
+            }
+            return false;
         }
 
         // Load stats from localStorage
@@ -1955,6 +2465,17 @@
         }
 
         function handleKeyPress(e) {
+            // Route to tutorial handler when tutorial is active
+            if (tutorialActive) {
+                if (e.key === 'Backspace') {
+                    e.preventDefault();
+                    handleTutorialKey('BACKSPACE');
+                } else if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+                    handleTutorialKey(e.key.toUpperCase());
+                }
+                return;
+            }
+
             if (gameWon) return;
 
             // Skip keyboard input on mobile
@@ -2429,9 +2950,6 @@
         const timeUntilNextEl = document.getElementById('timeUntilNext');
         const completionTimeEl = document.getElementById('completionTime');
         const datePickerEl = document.getElementById('datePicker');
-        const instructionsOverlayEl = document.getElementById('instructionsOverlay');
-        const closeInstructionsBtn = document.getElementById('closeInstructions');
-        const startPlayingBtn = document.getElementById('startPlaying');
         const helpBtn = document.getElementById('helpBtn');
 
         // ============================================================================
@@ -2539,16 +3057,29 @@
         // ============================================================================
         showSolutionBtn.addEventListener('click', showSolution);
         resetBtn.addEventListener('click', resetPuzzle);
-        closeInstructionsBtn.addEventListener('click', hideInstructions);
-        startPlayingBtn.addEventListener('click', hideInstructions);
-        helpBtn.addEventListener('click', showInstructions);
+        helpBtn.addEventListener('click', showTutorial);
         closeStatsBtn.addEventListener('click', hideStats);
-        
-        // Close instructions when clicking outside popup
-        instructionsOverlayEl.addEventListener('click', (e) => {
-            if (e.target === instructionsOverlayEl) {
-                hideInstructions();
+
+        // Tutorial navigation
+        document.getElementById('closeTutorial').addEventListener('click', hideTutorial);
+        document.getElementById('tutorialNext').addEventListener('click', () => {
+            if (tutorialStep === 5) {
+                hideTutorial();
+            } else {
+                tutorialSelectedWord = 1;
+                tutorialSelectedLetter = 0;
+                renderTutorialStep(tutorialStep + 1);
             }
+        });
+        document.getElementById('tutorialBack').addEventListener('click', () => {
+            if (tutorialStep > 0) {
+                tutorialSelectedWord = 1;
+                tutorialSelectedLetter = 0;
+                renderTutorialStep(tutorialStep - 1);
+            }
+        });
+        document.getElementById('tutorialOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('tutorialOverlay')) hideTutorial();
         });
         
         // Close stats when clicking outside popup
