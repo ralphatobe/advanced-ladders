@@ -1728,6 +1728,23 @@
                 }
             }
 
+            // Pre-compute which user words satisfy all step requirements (shown in green)
+            const wordComplete = new Set();
+            for (let wi = 1; wi <= exerciseDef.numBlanks; wi++) {
+                const w = allWords[wi];
+                if (w.some(l => l === '')) continue;
+                if (invalidPositions[wi] && invalidPositions[wi].size > 0) continue;
+                if (dictionaryInvalid.has(wi)) continue;
+                const wStr = w.join('');
+                const prevWord = allWords[wi - 1];
+                const prevStr = typeof prevWord === 'string' ? prevWord : prevWord.every(l => l !== '') ? prevWord.join('') : null;
+                const nextWord = allWords[wi + 1];
+                const nextStr = typeof nextWord === 'string' ? nextWord : nextWord.every(l => l !== '') ? nextWord.join('') : null;
+                if (prevStr && calculateEditDistance(prevStr, wStr) !== exerciseDef.distances[wi - 1]) continue;
+                if (nextStr && calculateEditDistance(wStr, nextStr) !== exerciseDef.distances[wi]) continue;
+                wordComplete.add(wi);
+            }
+
             for (let i = 0; i < allWords.length; i++) {
                 const word = allWords[i];
                 const isFixed = (i === 0 || i === allWords.length - 1);
@@ -1739,7 +1756,13 @@
                     const letter = typeof word === 'string' ? word[j] : (word[j] || '');
                     let cls = 'letter-box';
                     if (letter) {
-                        cls += (invalidPositions[i] && invalidPositions[i].has(j)) ? ' invalid-letter' : ' filled';
+                        if (wordComplete.has(i) && wordComplete.size === exerciseDef.numBlanks) {
+                            cls += ' correct';
+                        } else if (invalidPositions[i] && invalidPositions[i].has(j)) {
+                            cls += ' invalid-letter';
+                        } else {
+                            cls += ' filled';
+                        }
                     }
                     if (dictionaryInvalid.has(i)) cls += ' incorrect';
                     if (isSelected && selectedLetter === j) cls += ' cursor';
