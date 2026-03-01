@@ -1541,6 +1541,19 @@
             numBlanks: 2, distances: [1, 2, 1], wordLength: 3
         };
 
+        // All valid 3-letter English words formable from tutorial letters {A,C,D,E,H,P,R,T}.
+        // Needed because the main dictionary file filters out short words.
+        const TUTORIAL_WORD_SET = new Set([
+            'ACE', 'ACT', 'ADD', 'APE', 'APT', 'ARC', 'ARE', 'ART', 'ATE',
+            'CAD', 'CAP', 'CAR', 'CAT',
+            'DAD', 'DAP',
+            'EAR', 'EAT', 'ERA',
+            'HAD', 'HAT', 'HER',
+            'PAD', 'PAR', 'PAT', 'PEA', 'PER', 'PET',
+            'RAD', 'RAP', 'RAT', 'RED', 'REP', 
+            'TAD', 'TAP', 'TAR', 'TAT', 'TEA', 'THE', 
+        ]);
+
         let tutorialActive = false;
         let tutorialStep = 0;
         let tutorialEx1Words = { 1: ['', '', ''] };
@@ -1687,6 +1700,34 @@
             let stepsHtml = '';
             let indicatorsHtml = '';
 
+            // Pre-compute which letter positions exceed the bank count (only when a bank exists)
+            const invalidPositions = {}; // { allWordsIndex: Set<letterIndex> }
+            const bankLetters = exerciseDef.availableLetters;
+            if (bankLetters && bankLetters.length > 0) {
+                const bankCounts = {};
+                bankLetters.forEach(l => { bankCounts[l] = (bankCounts[l] || 0) + 1; });
+                const usedCounts = {};
+                for (let wi = 1; wi <= exerciseDef.numBlanks; wi++) {
+                    const w = allWords[wi];
+                    invalidPositions[wi] = new Set();
+                    for (let j = 0; j < w.length; j++) {
+                        const l = w[j];
+                        if (!l) continue;
+                        usedCounts[l] = (usedCounts[l] || 0) + 1;
+                        if (usedCounts[l] > (bankCounts[l] || 0)) invalidPositions[wi].add(j);
+                    }
+                }
+            }
+
+            // Pre-compute which user words are complete but not in the dictionary
+            const dictionaryInvalid = new Set(); // allWords indices
+            for (let wi = 1; wi <= exerciseDef.numBlanks; wi++) {
+                const w = allWords[wi];
+                if (w.every(l => l !== '') && !TUTORIAL_WORD_SET.has(w.join('')) && !isValidWord(w.join(''))) {
+                    dictionaryInvalid.add(wi);
+                }
+            }
+
             for (let i = 0; i < allWords.length; i++) {
                 const word = allWords[i];
                 const isFixed = (i === 0 || i === allWords.length - 1);
@@ -1697,7 +1738,10 @@
                 for (let j = 0; j < exerciseDef.wordLength; j++) {
                     const letter = typeof word === 'string' ? word[j] : (word[j] || '');
                     let cls = 'letter-box';
-                    if (letter) cls += ' filled';
+                    if (letter) {
+                        cls += (invalidPositions[i] && invalidPositions[i].has(j)) ? ' invalid-letter' : ' filled';
+                    }
+                    if (dictionaryInvalid.has(i)) cls += ' incorrect';
                     if (isSelected && selectedLetter === j) cls += ' cursor';
                     const dataAttrs = (interactive && !isFixed) ? ` data-word="${i}" data-letter="${j}"` : '';
                     const cursor = (interactive && !isFixed) ? ' style="cursor:pointer"' : '';
@@ -1707,8 +1751,18 @@
 
                 if (i < allWords.length - 1) {
                     const dist = exerciseDef.distances[i];
+                    const wordA = allWords[i];
+                    const wordB = allWords[i + 1];
+                    const aComplete = typeof wordA === 'string' || wordA.every(l => l !== '');
+                    const bComplete = typeof wordB === 'string' || wordB.every(l => l !== '');
+                    let indicatorClass = 'empty';
+                    if (aComplete && bComplete) {
+                        const wordAStr = typeof wordA === 'string' ? wordA : wordA.join('');
+                        const wordBStr = typeof wordB === 'string' ? wordB : wordB.join('');
+                        indicatorClass = calculateEditDistance(wordAStr, wordBStr) === dist ? 'valid' : 'invalid';
+                    }
                     indicatorsHtml += `<div class="tut-dist-row">
-                        <div class="edit-distance-indicator empty">
+                        <div class="edit-distance-indicator ${indicatorClass}">
                             <span class="distance-arrow"><img src="arrow_top_left.svg" alt="↖" style="width:14px;height:14px;"></span>
                             <span>${dist}</span>
                             <span class="distance-arrow"><img src="arrow_bottom_left.svg" alt="↙" style="width:14px;height:14px;"></span>
