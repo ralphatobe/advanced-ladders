@@ -1472,6 +1472,9 @@
             generateAvailableLetters();
             updateDailyDate();
             updateDisplay();
+            if (gameWon) {
+                showStats('🎉 Puzzle Complete!');
+            }
             // Update trigger label
             const triggerLabel = document.getElementById('dateTriggerLabel');
             if (triggerLabel) triggerLabel.textContent = formatDateForTrigger(selectedDateString);
@@ -1511,6 +1514,9 @@
             loadProgress();
             generateAvailableLetters();
             updateDisplay();
+            if (gameWon) {
+                showStats('🎉 Puzzle Complete!');
+            }
             document.addEventListener('keydown', handleKeyPress);
             // Initialize the custom date picker trigger label
             const triggerLabel = document.getElementById('dateTriggerLabel');
