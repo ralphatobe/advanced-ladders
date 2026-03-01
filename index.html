@@ -1756,7 +1756,7 @@
                     const letter = typeof word === 'string' ? word[j] : (word[j] || '');
                     let cls = 'letter-box';
                     if (letter) {
-                        if (wordComplete.has(i)) {
+                        if (wordComplete.has(i) && wordComplete.size === exerciseDef.numBlanks) {
                             cls += ' correct';
                         } else if (invalidPositions[i] && invalidPositions[i].has(j)) {
                             cls += ' invalid-letter';
