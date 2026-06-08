@@ -200,11 +200,10 @@
             animation: pop 0.3s ease;
         }
 
-        .letter-box.incorrect {
-            background: #ef4444;
-            color: white;
-            border-color: #ef4444;
-            animation: shake 0.5s ease;
+        .ladder-step.invalid-word,
+        .tut-step.invalid-word {
+            background: #fff1f2;
+            box-shadow: inset 0 0 0 2px #ef4444;
         }
 
         .letter-box.cursor {
@@ -1755,7 +1754,7 @@
                 const word = allWords[i];
                 const isFixed = (i === 0 || i === allWords.length - 1);
                 const isSelected = interactive && !isFixed && selectedWord === i;
-                const stepClass = 'tut-step' + (isSelected ? ' tut-selected' : '');
+                const stepClass = 'tut-step' + (isSelected ? ' tut-selected' : '') + (dictionaryInvalid.has(i) ? ' invalid-word' : '');
 
                 stepsHtml += `<div class="${stepClass}">`;
                 for (let j = 0; j < exerciseDef.wordLength; j++) {
@@ -1770,7 +1769,6 @@
                             cls += ' filled';
                         }
                     }
-                    if (dictionaryInvalid.has(i)) cls += ' incorrect';
                     if (isSelected && selectedLetter === j) cls += ' cursor';
                     const dataAttrs = (interactive && !isFixed) ? ` data-word="${i}" data-letter="${j}"` : '';
                     const cursor = (interactive && !isFixed) ? ' style="cursor:pointer"' : '';
@@ -2325,9 +2323,9 @@
 
         function addLadderStep(index, word, isFixed, isSelected) {
             const stepDiv = document.createElement('div');
-            stepDiv.className = 'ladder-step';
+            stepDiv.className = 'ladder-step' + (invalidWords[index] ? ' invalid-word' : '');
             stepDiv.dataset.index = index;
-            
+
             if (!isFixed && !gameWon) {
                 stepDiv.style.cursor = 'pointer';
                 stepDiv.addEventListener('click', () => selectWordSlot(index));
@@ -2354,10 +2352,6 @@
                         } else {
                             className += ' invalid-letter';
                         }
-                    }
-                    // If the entire word is marked invalid (not in dictionary), show incorrect class
-                    if (invalidWords[index]) {
-                        className += ' incorrect';
                     }
                     if (isSelected && i === selectedLetterIndex) {
                         className += ' cursor';
